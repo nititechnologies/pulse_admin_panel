@@ -18,7 +18,7 @@ export default function Layout({ children, title }: LayoutProps) {
 
   return (
     <div className="flex h-screen bg-white">
-      <Sidebar isOpen={sidebarOpen} onToggle={toggleSidebar} />
+      <Sidebar isOpen={sidebarOpen} />
       
       <div className={`flex-1 flex flex-col transition-all duration-300 ${
         sidebarOpen ? 'ml-64' : 'ml-16'

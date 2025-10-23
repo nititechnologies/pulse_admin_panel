@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Layout from '@/components/Layout';
-import { Search, UserCheck, UserX, Mail, Phone, Calendar, TrendingUp, Clock, ChevronDown, Check } from 'lucide-react';
+import { Search, UserCheck, UserX, Mail, Phone, TrendingUp, ChevronDown, Check } from 'lucide-react';
 
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -173,7 +173,7 @@ export default function UsersPage() {
     console.log(`User ${id} status updated to ${newStatus}`);
   };
 
-  const handleViewProfile = (user: any) => {
+  const handleViewProfile = (user: { id: number; name: string; email: string; role: string; status: string; joinDate: string; articles: number; avatar?: string }) => {
     setSelectedUser(user);
     setShowDetailsModal(true);
   };
@@ -181,29 +181,6 @@ export default function UsersPage() {
   const closeDetailsModal = () => {
     setShowDetailsModal(false);
     setSelectedUser(null);
-  };
-
-  const getStatusColor = (status: string) => {
-    return status === 'active' 
-      ? 'bg-green-100 text-green-800' 
-      : 'bg-red-100 text-red-800';
-  };
-
-  const getStatusIcon = (status: string) => {
-    return status === 'active' ? <UserCheck className="w-4 h-4" /> : <UserX className="w-4 h-4" />;
-  };
-
-  const getRoleColor = (role: string) => {
-    switch (role.toLowerCase()) {
-      case 'administrator':
-        return 'bg-purple-100 text-purple-800';
-      case 'editor':
-        return 'bg-blue-100 text-blue-800';
-      case 'journalist':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
   };
 
   return (
@@ -462,7 +439,7 @@ export default function UsersPage() {
 
         {/* User Details Modal */}
         {showDetailsModal && selectedUser && (
-          <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="fixed inset-0 backdrop-blur-xl flex items-center justify-center p-4 z-50">
             <div className="bg-gray-50 rounded-2xl max-w-md w-full max-h-[90vh] overflow-hidden shadow-2xl">
               {/* Modal Header */}
               <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between">

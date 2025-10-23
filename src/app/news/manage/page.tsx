@@ -44,7 +44,7 @@ export default function ManageNewsPage() {
   const statusOptions = [
     { value: 'all', label: 'All Status' },
     { value: 'published', label: 'Published' },
-    { value: 'draft', label: 'Draft' },
+    { value: 'removed', label: 'Removed' },
     { value: 'scheduled', label: 'Scheduled' }
   ];
 
@@ -95,6 +95,18 @@ export default function ManageNewsPage() {
     }
   };
 
+  const handleToggleStatus = (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'published' ? 'removed' : 'published';
+    setArticles(prevArticles => 
+      prevArticles.map(article => 
+        article.id === id 
+          ? { ...article, status: newStatus }
+          : article
+      )
+    );
+    console.log(`Article ${id} status updated to ${newStatus}`);
+  };
+
   const handleReviewArticle = (article: Article) => {
     setSelectedArticle(article);
     setShowReviewModal(true);
@@ -108,7 +120,8 @@ export default function ManageNewsPage() {
   const filteredArticles = articles.filter(article => {
     const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          article.journalistName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || article.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || 
+                           (article.tags && article.tags.some(tag => tag.toLowerCase() === selectedCategory.toLowerCase()));
     const matchesStatus = selectedStatus === 'all' || article.status === selectedStatus;
     
     return matchesSearch && matchesCategory && matchesStatus;
@@ -118,6 +131,8 @@ export default function ManageNewsPage() {
     switch (status) {
       case 'published':
         return 'bg-green-100 text-green-800';
+      case 'removed':
+        return 'bg-red-100 text-red-800';
       case 'draft':
         return 'bg-yellow-100 text-yellow-800';
       case 'scheduled':
@@ -282,7 +297,11 @@ export default function ManageNewsPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredArticles.map((article) => (
-                    <tr key={article.id} className="hover:bg-gray-50 transition-colors">
+                    <tr 
+                      key={article.id} 
+                      onClick={() => handleReviewArticle(article)}
+                      className="hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
@@ -312,23 +331,48 @@ export default function ManageNewsPage() {
                         {new Date(article.publishedAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {article.category}
+                        {article.tags && article.tags.length > 0 ? article.tags[0] : 'No Category'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(article.status || 'published')}`}>
-                          {(article.status || 'published').charAt(0).toUpperCase() + (article.status || 'published').slice(1)}
-                        </span>
+                        <div className="flex items-center space-x-3">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(article.status || 'published')}`}>
+                            {(article.status || 'published').charAt(0).toUpperCase() + (article.status || 'published').slice(1)}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleStatus(article.id!, article.status || 'published');
+                            }}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white ${
+                              (article.status || 'published') === 'published' 
+                                ? 'bg-green-500 focus:ring-green-500' 
+                                : 'bg-red-500 focus:ring-red-500'
+                            }`}
+                          >
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
+                                (article.status || 'published') === 'published' ? 'translate-x-6' : 'translate-x-1'
+                              }`}
+                            />
+                          </button>
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-2">
                           <button 
-                            onClick={() => handleReviewArticle(article)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleReviewArticle(article);
+                            }}
                             className="text-[#323232] hover:text-gray-600 transition-colors"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
                           <button 
-                            onClick={() => handleDeleteArticle(article.id!)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteArticle(article.id!);
+                            }}
                             className="text-red-600 hover:text-red-800 transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -365,7 +409,7 @@ export default function ManageNewsPage() {
 
         {/* Review Modal */}
         {showReviewModal && selectedArticle && (
-          <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="fixed inset-0 backdrop-blur-xl flex items-center justify-center p-4 z-50">
           <div className="bg-gray-50 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
               {/* Modal Header */}
               <div className="p-6 border-b border-gray-200 flex items-center justify-between">

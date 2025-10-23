@@ -11,7 +11,7 @@ export default function ManageAdsPage() {
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
-  const campaigns = [
+  const [campaigns, setCampaigns] = useState([
     {
       id: 1,
       title: 'Summer Sale 2024',
@@ -44,7 +44,7 @@ export default function ManageAdsPage() {
       id: 3,
       title: 'Holiday Promotion',
       type: 'Display Ad',
-      status: 'paused',
+      status: 'removed',
       impressions: 45000,
       clicks: 1350,
       ctr: 3.0,
@@ -58,7 +58,7 @@ export default function ManageAdsPage() {
       id: 4,
       title: 'Brand Awareness',
       type: 'Native Ad',
-      status: 'draft',
+      status: 'removed',
       impressions: 0,
       clicks: 0,
       ctr: 0,
@@ -68,7 +68,7 @@ export default function ManageAdsPage() {
       endDate: '2024-02-28',
       imageUrl: 'https://via.placeholder.com/300x200',
     },
-  ];
+  ]);
 
   const filteredCampaigns = campaigns.filter(campaign => {
     const matchesSearch = campaign.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -82,6 +82,8 @@ export default function ManageAdsPage() {
     switch (status) {
       case 'active':
         return 'bg-green-100 text-green-800';
+      case 'removed':
+        return 'bg-red-100 text-red-800';
       case 'paused':
         return 'bg-yellow-100 text-yellow-800';
       case 'draft':
@@ -112,6 +114,18 @@ export default function ManageAdsPage() {
   const closeDetailsModal = () => {
     setShowDetailsModal(false);
     setSelectedCampaign(null);
+  };
+
+  const handleToggleStatus = (id: number, currentStatus: string) => {
+    const newStatus = currentStatus === 'active' ? 'removed' : 'active';
+    setCampaigns(prevCampaigns => 
+      prevCampaigns.map(campaign => 
+        campaign.id === id 
+          ? { ...campaign, status: newStatus }
+          : campaign
+      )
+    );
+    console.log(`Campaign ${id} status updated to ${newStatus}`);
   };
 
   return (
@@ -167,8 +181,7 @@ export default function ManageAdsPage() {
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
-                <option value="paused">Paused</option>
-                <option value="draft">Draft</option>
+                <option value="removed">Removed</option>
                 <option value="scheduled">Scheduled</option>
               </select>
             </div>
@@ -208,8 +221,12 @@ export default function ManageAdsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredCampaigns.map((campaign) => (
-                  <tr key={campaign.id} className="hover:bg-gray-50 transition-colors">
+                  {filteredCampaigns.map((campaign) => (
+                    <tr 
+                      key={campaign.id} 
+                      onClick={() => handleViewCampaign(campaign)}
+                      className="hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
@@ -239,20 +256,48 @@ export default function ManageAdsPage() {
                       {campaign.ctr}%
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium flex items-center space-x-1 ${getStatusColor(campaign.status)}`}>
-                        {getStatusIcon(campaign.status)}
-                        <span>{campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}</span>
-                      </span>
+                      <div className="flex items-center space-x-3">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium flex items-center space-x-1 ${getStatusColor(campaign.status)}`}>
+                          {getStatusIcon(campaign.status)}
+                          <span>{campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}</span>
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleStatus(campaign.id, campaign.status);
+                          }}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white ${
+                            campaign.status === 'active' 
+                              ? 'bg-green-500 focus:ring-green-500' 
+                              : 'bg-red-500 focus:ring-red-500'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
+                              campaign.status === 'active' ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
                     </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-2">
                           <button 
-                            onClick={() => handleViewCampaign(campaign)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewCampaign(campaign);
+                            }}
                             className="text-[#323232] hover:text-gray-600 transition-colors"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
-                          <button className="text-red-600 hover:text-red-800 transition-colors">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Handle delete action
+                            }}
+                            className="text-red-600 hover:text-red-800 transition-colors"
+                          >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
@@ -286,7 +331,7 @@ export default function ManageAdsPage() {
 
         {/* Campaign Details Modal */}
         {showDetailsModal && selectedCampaign && (
-          <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="fixed inset-0 backdrop-blur-xl flex items-center justify-center p-4 z-50">
           <div className="bg-gray-50 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
               {/* Modal Header */}
               <div className="p-6 border-b border-gray-200 flex items-center justify-between">

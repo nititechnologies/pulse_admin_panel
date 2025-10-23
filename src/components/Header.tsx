@@ -10,17 +10,7 @@ interface HeaderProps {
 }
 
 export default function Header({ onToggleSidebar, title }: HeaderProps) {
-  const { user, logout } = useAuth();
   const router = useRouter();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      router.push('/auth');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
 
   return (
     <header className="bg-white border-b border-[#DCDCDC] h-16 flex items-center justify-between px-6 shadow-sm">
