@@ -64,14 +64,14 @@ export default function CreateAdPage() {
     <Layout title="Create Ad">
       <div className="space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DCDCDC]">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="p-3 bg-blue-50 rounded-lg">
                 <Plus className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Create New Ad Campaign</h1>
+                <h1 className="text-2xl font-bold text-[#323232]">Create New Ad Campaign</h1>
                 <p className="text-gray-600">Design and launch a new advertising campaign</p>
               </div>
             </div>
@@ -82,7 +82,7 @@ export default function CreateAdPage() {
               </button>
               <button 
                 onClick={handleSubmit}
-                className="px-4 py-2 bg-[#5E8BA8] text-white rounded-lg hover:bg-[#4A6F8C] transition-colors"
+                className="px-4 py-2 bg-gradient-to-r from-[#323232] to-black text-white rounded-lg hover:from-black hover:to-[#323232] transition-colors"
               >
                 <Save className="w-4 h-4 inline mr-2" />
                 Create Campaign
@@ -92,7 +92,7 @@ export default function CreateAdPage() {
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DCDCDC]">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information */}
             <div>
@@ -105,7 +105,7 @@ export default function CreateAdPage() {
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#323232]"
                 placeholder="Enter campaign title..."
                 required
               />
@@ -122,7 +122,7 @@ export default function CreateAdPage() {
                 value={formData.description}
                 onChange={handleInputChange}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#323232]"
                 placeholder="Describe your campaign..."
                 required
               />
@@ -140,7 +140,7 @@ export default function CreateAdPage() {
                   name="budget"
                   value={formData.budget}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#323232]"
                   placeholder="Enter budget amount..."
                   min="0"
                   step="0.01"
@@ -157,7 +157,7 @@ export default function CreateAdPage() {
                   name="duration"
                   value={formData.duration}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#323232]"
                   placeholder="Enter duration in days..."
                   min="1"
                 />
@@ -176,7 +176,7 @@ export default function CreateAdPage() {
                   name="imageUrl"
                   value={formData.imageUrl}
                   onChange={handleInputChange}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#323232]"
                   placeholder="https://example.com/image.jpg"
                   required
                 />
@@ -199,7 +199,7 @@ export default function CreateAdPage() {
                 <button
                   type="button"
                   onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-[#323232]"
                 >
                   <span>
                     {statusOptions.find(opt => opt.value === formData.status)?.label || 'Draft'}
@@ -229,13 +229,13 @@ export default function CreateAdPage() {
 
         {/* Preview */}
         {(formData.title || formData.imageUrl) && (
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Ad Preview</h3>
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DCDCDC]">
+            <h3 className="text-lg font-semibold text-[#323232] mb-4">Ad Preview</h3>
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="text-center text-sm text-gray-500 mb-3">How your ad will appear:</div>
               
               {/* Ad Preview Container */}
-              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm max-w-md mx-auto">
+              <div className="bg-white border border-[#DCDCDC] rounded-lg overflow-hidden shadow-sm max-w-md mx-auto">
                 {/* Ad Header */}
                 <div className="bg-blue-600 text-white px-4 py-2 text-sm font-medium">
                   Advertisement
@@ -272,7 +272,7 @@ export default function CreateAdPage() {
                   
                   {formData.title && (
                     <div className="mt-4">
-                      <h4 className="font-semibold text-gray-900 text-lg leading-tight">{formData.title}</h4>
+                      <h4 className="font-semibold text-[#323232] text-lg leading-tight">{formData.title}</h4>
                       {formData.description && (
                         <p className="text-gray-600 text-sm mt-2 leading-relaxed">{formData.description}</p>
                       )}

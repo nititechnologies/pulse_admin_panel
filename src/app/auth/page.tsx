@@ -56,31 +56,42 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Column - Auth Form */}
+      {/* Left Column - Image */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#E6EBF0] to-[#F0F0F0] relative overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center p-8">
+          <img 
+            src="/image.png" 
+            alt="Welcome" 
+            className="max-w-full max-h-full object-contain"
+          />
+        </div>
+      </div>
+
+      {/* Right Column - Auth Form */}
       <div className="flex-1 bg-white flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           {/* Logo */}
           <div className="flex items-center mb-8">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center mr-3">
-              <span className="text-white font-bold text-sm">P</span>
+            <div className="w-10 h-10 bg-gradient-to-br from-[#323232] to-black rounded-lg flex items-center justify-center mr-3 shadow-md">
+              <span className="text-white font-bold text-lg">P</span>
             </div>
-            <span className="text-2xl font-bold text-gray-900">PULSE</span>
+            <span className="text-2xl font-bold text-[#323232]">PULSE</span>
           </div>
 
           {/* Form */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-[#323232] mb-2">
               {isLogin ? 'Welcome back' : 'Create an account'}
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-500">
               {isLogin ? 'Sign in to your account' : 'Enter your details to get started'}
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {!isLogin && (
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="name" className="block text-sm font-medium text-[#323232] mb-2">
                   Name
                 </label>
                 <input
@@ -88,14 +99,14 @@ export default function AuthPage() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-[#DCDCDC] rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all bg-[#F0F0F0] placeholder-gray-400 text-[#323232]"
                   placeholder="Enter your name"
                 />
               </div>
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-[#323232] mb-2">
                 Email
               </label>
               <input
@@ -103,14 +114,14 @@ export default function AuthPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-[#DCDCDC] rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all bg-[#F0F0F0] placeholder-gray-400 text-[#323232]"
                 placeholder="Enter your mail"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-[#323232] mb-2">
                 Password
               </label>
               <div className="relative">
@@ -119,14 +130,14 @@ export default function AuthPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 pr-12 border border-[#DCDCDC] rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all bg-[#F0F0F0] placeholder-gray-400 text-[#323232]"
                   placeholder="Enter your password"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#323232] transition-colors focus:outline-none focus:ring-0"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -135,7 +146,7 @@ export default function AuthPage() {
 
             {!isLogin && (
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#323232] mb-2">
                   Confirm Password
                 </label>
                 <div className="relative">
@@ -144,14 +155,14 @@ export default function AuthPage() {
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 pr-12 border border-[#DCDCDC] rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all bg-[#F0F0F0] placeholder-gray-400 text-[#323232]"
                     placeholder="Confirm your password"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#323232] transition-colors focus:outline-none focus:ring-0"
                   >
                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -166,11 +177,11 @@ export default function AuthPage() {
                   type="checkbox"
                   checked={agreedToTerms}
                   onChange={(e) => setAgreedToTerms(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-[#323232] border-[#DCDCDC] rounded focus:ring-gray-300"
                 />
-                <label htmlFor="terms" className="ml-2 text-sm text-gray-700">
+                <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
                   I agree to all the{' '}
-                  <a href="#" className="text-blue-600 hover:text-blue-500 underline">
+                  <a href="#" className="text-[#323232] hover:text-black underline transition-colors">
                     Terms & Conditions
                   </a>
                 </label>
@@ -186,7 +197,7 @@ export default function AuthPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-gradient-to-r from-[#323232] to-black text-white py-3 px-4 rounded-lg font-medium hover:from-black hover:to-[#323232] focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
             >
               {loading ? (
                 <div className="flex items-center justify-center">
@@ -200,8 +211,8 @@ export default function AuthPage() {
           </form>
 
           {/* Switch Mode */}
-          <div className="text-center mt-6">
-            <span className="text-gray-600">
+          <div className="mt-6">
+            <span className="text-gray-500">
               {isLogin ? "Don't have an account? " : "Already have an account? "}
             </span>
             <button
@@ -215,22 +226,10 @@ export default function AuthPage() {
                 setName('');
                 setAgreedToTerms(false);
               }}
-              className="text-blue-600 hover:text-blue-500 font-medium"
+              className="text-[#323232] hover:text-black font-medium transition-colors focus:outline-none focus:ring-0"
             >
               {isLogin ? 'Sign up' : 'Log in'}
             </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Column - Simple Background */}
-      <div className="flex-1 bg-gradient-to-br from-blue-900 to-blue-800 relative overflow-hidden">
-        <div className="relative z-10 flex items-center justify-center h-full p-8">
-          <div className="w-full max-w-md text-center text-white">
-            <h2 className="text-3xl font-bold mb-4">Welcome to PULSE</h2>
-            <p className="text-blue-100 leading-relaxed text-lg">
-              Your comprehensive admin panel for managing content, ads, and support tickets efficiently.
-            </p>
           </div>
         </div>
       </div>

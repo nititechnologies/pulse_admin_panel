@@ -131,15 +131,15 @@ export default function ManageNewsPage() {
     <Layout title="Manage News">
       <div className="space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DCDCDC]">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Manage News Articles</h1>
+            <h1 className="text-2xl font-bold text-[#323232]">Manage News Articles</h1>
             <p className="text-gray-600">Edit, delete, and organize your articles</p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DCDCDC]">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div className="md:col-span-2">
@@ -150,7 +150,7 @@ export default function ManageNewsPage() {
                   placeholder="Search articles..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#323232]"
                 />
               </div>
             </div>
@@ -163,7 +163,7 @@ export default function ManageNewsPage() {
                   onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm"
                 >
-                  <span className="text-gray-900">
+                  <span className="text-[#323232]">
                     {selectedCategory === 'all' ? 'All Categories' : selectedCategory}
                   </span>
                   <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
@@ -202,7 +202,7 @@ export default function ManageNewsPage() {
                   onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm"
                 >
-                  <span className="text-gray-900">
+                  <span className="text-[#323232]">
                     {statusOptions.find(opt => opt.value === selectedStatus)?.label || 'All Status'}
                   </span>
                   <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
@@ -228,9 +228,9 @@ export default function ManageNewsPage() {
         </div>
 
         {/* Articles List */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white rounded-lg shadow-sm border border-[#DCDCDC]">
           <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-[#323232]">
               Articles ({filteredArticles.length})
             </h3>
           </div>
@@ -256,80 +256,89 @@ export default function ManageNewsPage() {
               <p className="text-sm text-gray-500">Create your first article to get started</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
-              {filteredArticles.map((article) => (
-              <div key={article.id} className="p-6 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => console.log('Edit article:', article.id)}>
-                <div className="flex items-start space-x-4">
-                  {/* Featured Image */}
-                  <div className="flex-shrink-0">
-                    <img
-                      src={article.imageUrl}
-                      alt={article.title}
-                      className="w-20 h-20 object-cover rounded-lg"
-                      onError={(e) => {
-                        e.currentTarget.src = 'https://via.placeholder.com/80x80?text=No+Image';
-                      }}
-                    />
-                  </div>
-
-                  {/* Article Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                          {article.title}
-                        </h4>
-                        <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
-                          <span className="flex items-center">
-                            <User className="w-3 h-3 mr-1" />
-                            {article.journalistName}
-                          </span>
-                          <span>•</span>
-                          <span className="flex items-center">
-                            <Calendar className="w-3 h-3 mr-1" />
-                            {new Date(article.publishedAt).toLocaleDateString()}
-                          </span>
-                          <span>•</span>
-                          <span className="flex items-center">
-                            <Tag className="w-3 h-3 mr-1" />
-                            {article.category}
-                          </span>
-                          <span>•</span>
-                          <span>{article.views || 0} views</span>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Article
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Author
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Published
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Category
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredArticles.map((article) => (
+                    <tr key={article.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <img
+                              className="h-10 w-10 rounded-lg object-cover"
+                              src={article.imageUrl}
+                              alt={article.title}
+                              onError={(e) => {
+                                e.currentTarget.src = 'https://via.placeholder.com/40x40?text=No+Image';
+                              }}
+                            />
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-[#323232] max-w-xs truncate">
+                              {article.title}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {article.views || 0} views
+                            </div>
+                          </div>
                         </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {article.journalistName}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {new Date(article.publishedAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {article.category}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(article.status || 'published')}`}>
+                          {(article.status || 'published').charAt(0).toUpperCase() + (article.status || 'published').slice(1)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-2">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(article.status || 'published')}`}>
-                            {(article.status || 'published').charAt(0).toUpperCase() + (article.status || 'published').slice(1)}
-                          </span>
-                          {article.tags && article.tags.length > 0 && (
-                            <span className="text-xs text-gray-500">
-                              {article.tags.slice(0, 2).join(', ')}
-                              {article.tags.length > 2 && ` +${article.tags.length - 2} more`}
-                            </span>
-                          )}
+                          <button 
+                            onClick={() => handleReviewArticle(article)}
+                            className="text-[#323232] hover:text-gray-600 transition-colors"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteArticle(article.id!)}
+                            className="text-red-600 hover:text-red-800 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center space-x-2">
-                        <button 
-                          onClick={() => handleReviewArticle(article)}
-                          className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteArticle(article.id!)}
-                          className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
@@ -340,13 +349,13 @@ export default function ManageNewsPage() {
                 Showing 1 to {filteredArticles.length} of {filteredArticles.length} results
               </p>
               <div className="flex space-x-2">
-                <button className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
+                <button className="px-3 py-1 border border-[#DCDCDC] rounded text-sm text-[#323232] hover:bg-[#F0F0F0] transition-colors">
                   Previous
                 </button>
-                <button className="px-3 py-1 bg-[#5E8BA8] text-white rounded text-sm hover:bg-[#4A6F8C] transition-colors">
+                <button className="px-3 py-1 bg-gradient-to-r from-[#323232] to-black text-white rounded text-sm hover:from-black hover:to-[#323232] transition-colors">
                   1
                 </button>
-                <button className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
+                <button className="px-3 py-1 border border-[#DCDCDC] rounded text-sm text-[#323232] hover:bg-[#F0F0F0] transition-colors">
                   Next
                 </button>
               </div>
@@ -356,11 +365,11 @@ export default function ManageNewsPage() {
 
         {/* Review Modal */}
         {showReviewModal && selectedArticle && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+          <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-50 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
               {/* Modal Header */}
               <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">Article Review</h2>
+                <h2 className="text-2xl font-bold text-[#323232]">Article Review</h2>
                 <button
                   onClick={closeReviewModal}
                   className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
@@ -375,11 +384,11 @@ export default function ManageNewsPage() {
               <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
                 <div className="space-y-6">
                   {/* Article Header */}
-                  <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="border border-[#DCDCDC] rounded-xl overflow-hidden bg-white">
                     <div className="p-6 border-b border-gray-100">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <h3 className="text-2xl font-bold text-gray-900 mb-3 leading-tight">
+                          <h3 className="text-2xl font-bold text-[#323232] mb-3 leading-tight">
                             {selectedArticle.title}
                           </h3>
                           {selectedArticle.summary && (
@@ -429,7 +438,7 @@ export default function ManageNewsPage() {
                           {selectedArticle.tags.map((tag, index) => (
                             <span
                               key={index}
-                              className="px-3 py-1 bg-white text-gray-700 rounded-full text-sm font-medium border border-gray-200"
+                              className="px-3 py-1 bg-white text-gray-700 rounded-full text-sm font-medium border border-[#DCDCDC]"
                             >
                               #{tag}
                             </span>
@@ -441,7 +450,7 @@ export default function ManageNewsPage() {
                     {/* Article Content */}
                     {selectedArticle.content && (
                       <div className="p-6 border-t border-gray-100">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">Article Content</h4>
+                        <h4 className="text-lg font-semibold text-[#323232] mb-4">Article Content</h4>
                         <div 
                           className="prose prose-sm max-w-none"
                           dangerouslySetInnerHTML={{ __html: selectedArticle.content }}

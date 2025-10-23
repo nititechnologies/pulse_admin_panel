@@ -86,14 +86,14 @@ export default function Home() {
             {stats.map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <div key={index} className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+                <div key={index} className="bg-white rounded-2xl p-8 shadow-sm border border-[#DCDCDC] hover:shadow-md transition-all duration-300">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                      <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                      <p className="text-2xl font-bold text-[#323232]">{stat.value}</p>
                     </div>
-                    <div className="p-4 bg-[#9EC4D9] rounded-xl">
-                      <Icon className="w-7 h-7 text-[#5E8BA8]" />
+                    <div className="p-4 bg-[#F0F0F0] rounded-xl">
+                      <Icon className="w-7 h-7 text-[#323232]" />
                     </div>
                   </div>
                   <div className="mt-4 flex items-center">
@@ -113,19 +113,19 @@ export default function Home() {
           {/* Recent Activity and Top Categories */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Recent Activity */}
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-[#DCDCDC]">
+              <h3 className="text-lg font-semibold text-[#323232] mb-4">Recent Activity</h3>
               <div className="space-y-4">
                 {recentActivities.map((activity) => (
                   <div key={activity.id} className="flex items-start space-x-3">
                     <div className={`w-2 h-2 rounded-full mt-2 ${
-                      activity.type === 'news' ? 'bg-[#5E8BA8]' :
+                      activity.type === 'news' ? 'bg-[#323232]' :
                       activity.type === 'ad' ? 'bg-green-500' :
-                      activity.type === 'analytics' ? 'bg-[#4A6F8C]' :
+                      activity.type === 'analytics' ? 'bg-gray-600' :
                       'bg-orange-500'
                     }`}></div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">{activity.title}</p>
+                      <p className="text-sm font-medium text-[#323232]">{activity.title}</p>
                       <p className="text-sm text-gray-500">{activity.time}</p>
                     </div>
                   </div>
@@ -134,16 +134,16 @@ export default function Home() {
             </div>
 
             {/* Top Categories */}
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Categories</h3>
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-[#DCDCDC]">
+              <h3 className="text-lg font-semibold text-[#323232] mb-4">Top Categories</h3>
               <div className="space-y-4">
                 {topCategories.map((category, index) => (
                   <div key={index} className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-900">{category.name}</span>
+                    <span className="text-sm font-medium text-[#323232]">{category.name}</span>
                     <div className="flex items-center space-x-2">
-                      <div className="w-24 bg-gray-200 rounded-full h-2">
+                      <div className="w-24 bg-[#F0F0F0] rounded-full h-2">
                         <div 
-                          className="bg-[#5E8BA8] h-2 rounded-full" 
+                          className="bg-gradient-to-r from-[#323232] to-black h-2 rounded-full" 
                           style={{ width: `${category.value}%` }}
                         ></div>
                       </div>

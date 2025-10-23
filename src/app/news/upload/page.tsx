@@ -191,14 +191,14 @@ export default function UploadNewsPage() {
     <Layout title="Create Article">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-[#DCDCDC]">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
+              <div className="p-3 bg-gradient-to-br from-[#323232] to-black rounded-xl">
                 <Upload className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Create New Article</h1>
+                <h1 className="text-2xl font-bold text-[#323232]">Create New Article</h1>
                 <p className="text-gray-500 text-sm">Publish professional news content</p>
               </div>
             </div>
@@ -206,7 +206,7 @@ export default function UploadNewsPage() {
               <button 
                 type="button"
                 onClick={handleImagePreview}
-                className="px-6 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors font-medium flex items-center"
+                className="px-6 py-2 border border-[#DCDCDC] rounded-lg text-gray-600 hover:bg-[#F0F0F0] transition-colors font-medium flex items-center"
               >
                 <Image className="w-4 h-4 mr-2" />
                 {showImagePreview ? 'Hide Preview' : 'Show Preview'}
@@ -215,7 +215,7 @@ export default function UploadNewsPage() {
                 type="submit"
                 form="article-form"
                 disabled={isSubmitting}
-                className="px-6 py-2 bg-gradient-to-r from-[#5E8BA8] to-[#4A6F8C] text-white rounded-lg hover:from-[#4A6F8C] hover:to-[#2F4A61] transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-gradient-to-r from-[#323232] to-black text-white rounded-lg hover:from-black hover:to-[#323232] transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <>
@@ -234,11 +234,11 @@ export default function UploadNewsPage() {
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-xl p-8 shadow-sm border border-[#DCDCDC]">
           <form id="article-form" onSubmit={handleSubmit} className="space-y-8">
             {/* Title */}
             <div className="space-y-2">
-              <label htmlFor="title" className="block text-sm font-semibold text-gray-900">
+              <label htmlFor="title" className="block text-sm font-semibold text-[#323232]">
                 Article Title *
               </label>
               <input
@@ -247,7 +247,7 @@ export default function UploadNewsPage() {
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-lg font-medium text-gray-900"
+                className="w-full px-4 py-3 border border-[#DCDCDC] rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-colors text-lg font-medium text-[#323232] bg-[#F0F0F0]"
                 placeholder="Enter compelling article title..."
                 required
               />
@@ -255,7 +255,7 @@ export default function UploadNewsPage() {
 
             {/* Summary */}
             <div className="space-y-2">
-              <label htmlFor="summary" className="block text-sm font-semibold text-gray-900">
+              <label htmlFor="summary" className="block text-sm font-semibold text-[#323232]">
                 Article Summary *
               </label>
               <textarea
@@ -264,7 +264,7 @@ export default function UploadNewsPage() {
                 value={formData.summary}
                 onChange={handleInputChange}
                 rows={4}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none text-gray-900"
+                className="w-full px-4 py-3 border border-[#DCDCDC] rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-colors resize-none text-[#323232] bg-[#F0F0F0]"
                 placeholder="Write a compelling summary that captures the essence of your article..."
                 required
               />

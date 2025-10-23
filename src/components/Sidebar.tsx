@@ -68,17 +68,17 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
   ];
 
   return (
-    <div className={`fixed left-0 top-0 h-full bg-[#2F4A61] transition-all duration-300 z-50 ${
+    <div className={`fixed left-0 top-0 h-full bg-white border-r border-[#DCDCDC] transition-all duration-300 z-50 ${
       isOpen ? 'w-64' : 'w-16'
     }`}>
       {/* Logo */}
-      <div className="flex items-center justify-center h-16 px-4 border-b border-[#4A6F8C]">
+      <div className="flex items-center justify-center h-16 px-4 border-b border-[#DCDCDC]">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-[#5E8BA8] rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-[#323232] to-black rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">P</span>
           </div>
           {isOpen && (
-            <span className="text-xl font-bold text-white">PULSE</span>
+            <span className="text-xl font-bold text-[#323232]">PULSE</span>
           )}
         </div>
       </div>
@@ -99,8 +99,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                   <div
                     className={`flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-colors ${
                       isActive(item.path)
-                        ? 'bg-[#5E8BA8] text-white'
-                        : 'text-gray-300 hover:bg-[#4A6F8C]'
+                        ? 'bg-gradient-to-r from-[#323232] to-black text-white'
+                        : 'text-[#323232] hover:bg-[#F0F0F0]'
                     }`}
                     onClick={() => {
                       if (item.id === 'news') {
@@ -131,8 +131,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                     href={item.path}
                     className={`flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                       isActive(item.path)
-                        ? 'bg-[#5E8BA8] text-white'
-                        : 'text-gray-300 hover:bg-[#4A6F8C]'
+                        ? 'bg-gradient-to-r from-[#323232] to-black text-white'
+                        : 'text-[#323232] hover:bg-[#F0F0F0]'
                     }`}
                   >
                     <div className="flex items-center space-x-3">
@@ -153,8 +153,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                           href={subItem.path}
                           className={`flex items-center space-x-3 px-3 py-2 text-sm rounded-lg transition-colors ${
                             isActive(subItem.path)
-                              ? 'bg-[#5E8BA8] text-white'
-                              : 'text-gray-400 hover:bg-[#4A6F8C]'
+                              ? 'bg-gradient-to-r from-[#323232] to-black text-white'
+                              : 'text-gray-600 hover:bg-[#F0F0F0]'
                           }`}
                         >
                           <SubIcon className="w-4 h-4" />
@@ -171,15 +171,15 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       </nav>
 
       {/* User info */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#4A6F8C]">
+      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#DCDCDC]">
         {isOpen && (
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-[#5E8BA8] rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-[#323232] to-black rounded-full flex items-center justify-center">
               <Users className="w-4 h-4 text-white" />
             </div>
             <div>
-              <p className="text-sm font-medium text-white">Admin User</p>
-              <p className="text-xs text-gray-400">admin@pulse.com</p>
+              <p className="text-sm font-medium text-[#323232]">Admin User</p>
+              <p className="text-xs text-gray-500">admin@pulse.com</p>
             </div>
           </div>
         )}

@@ -446,13 +446,13 @@ export default function UsersPage() {
                 Showing 1 to {filteredUsers.length} of {filteredUsers.length} results
               </p>
               <div className="flex space-x-2">
-                <button className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
+                <button className="px-3 py-1 border border-[#DCDCDC] rounded text-sm text-[#323232] hover:bg-[#F0F0F0] transition-colors">
                   Previous
                 </button>
-                <button className="px-3 py-1 bg-[#5E8BA8] text-white rounded text-sm hover:bg-[#4A6F8C] transition-colors">
+                <button className="px-3 py-1 bg-gradient-to-r from-[#323232] to-black text-white rounded text-sm hover:from-black hover:to-[#323232] transition-colors">
                   1
                 </button>
-                <button className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
+                <button className="px-3 py-1 border border-[#DCDCDC] rounded text-sm text-[#323232] hover:bg-[#F0F0F0] transition-colors">
                   Next
                 </button>
               </div>
@@ -462,11 +462,11 @@ export default function UsersPage() {
 
         {/* User Details Modal */}
         {showDetailsModal && selectedUser && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-hidden shadow-2xl">
+          <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center p-4 z-50">
+            <div className="bg-gray-50 rounded-2xl max-w-md w-full max-h-[90vh] overflow-hidden shadow-2xl">
               {/* Modal Header */}
               <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">User Profile</h2>
+                <h2 className="text-2xl font-bold text-[#323232]">User Profile</h2>
                 <button
                   onClick={closeDetailsModal}
                   className="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
@@ -492,7 +492,7 @@ export default function UsersPage() {
                         }}
                       />
                     </div>
-                    <h3 className="text-3xl font-bold text-gray-900 mb-2">{selectedUser.name}</h3>
+                    <h3 className="text-3xl font-bold text-[#323232] mb-2">{selectedUser.name}</h3>
                     <div className="space-y-1 text-sm text-gray-600">
                       <div className="flex items-center justify-center space-x-2">
                         <Mail className="w-4 h-4 text-gray-400" />
@@ -507,7 +507,7 @@ export default function UsersPage() {
 
                   {/* User Information */}
                   <div className="bg-white border border-gray-200 rounded-xl p-6">
-                    <h4 className="text-lg font-semibold text-gray-900 mb-4">User Information</h4>
+                    <h4 className="text-lg font-semibold text-[#323232] mb-4">User Information</h4>
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between items-center">
                         <span className="font-medium text-gray-600">Join Date</span>
@@ -537,13 +537,13 @@ export default function UsersPage() {
 
                   {/* Recent Articles */}
                   <div className="bg-white border border-gray-200 rounded-xl p-6">
-                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Recent Articles</h4>
+                    <h4 className="text-lg font-semibold text-[#323232] mb-4">Recent Articles</h4>
                     <div className="space-y-4">
                       {selectedUser.recentArticles.map((article, index) => (
                         <div key={index} className="flex items-center space-x-3 py-3 border-b border-gray-100 last:border-b-0">
                           <TrendingUp className="w-4 h-4 text-gray-400 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-gray-900 text-sm">{article.title}</div>
+                            <div className="font-medium text-[#323232] text-sm">{article.title}</div>
                             <div className="text-xs text-gray-500">{article.date}</div>
                           </div>
                           <div className="text-xs text-gray-500 font-medium">
