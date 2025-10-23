@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import RichTextEditor from '@/components/RichTextEditor';
 import { addArticle } from '@/lib/articles';
-import { testFirebaseConnection } from '@/lib/testFirebase';
-import { Upload, Image, Save, Eye, Plus, X, Globe, Clock, User, Tag } from 'lucide-react';
+import { Upload, Image, Save, Eye, Plus, X, Globe, Clock, User, Tag, ChevronDown, Check } from 'lucide-react';
 
 export default function UploadNewsPage() {
   const [formData, setFormData] = useState({
@@ -13,7 +12,6 @@ export default function UploadNewsPage() {
     summary: '',
     content: '',
     journalistName: '',
-    category: '',
     region: '',
     source: '',
     imageUrl: '',
@@ -22,8 +20,38 @@ export default function UploadNewsPage() {
     publishedAt: new Date().toISOString(),
   });
 
-  const [newTag, setNewTag] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [isRegionDropdownOpen, setIsRegionDropdownOpen] = useState(false);
+  const regionDropdownRef = useRef(null);
+
+  const regionOptions = [
+    'Eastern India',
+    'North India',
+    'Nagaland',
+    'India',
+    'International'
+  ];
+
+  const suggestedTags = [
+    'Technical', 'Political', 'Education', 'Health', 'Sports', 'Entertainment',
+    'Business', 'Science', 'Environment', 'Technology', 'Economy', 'Social',
+    'International', 'Local', 'Breaking', 'Analysis', 'Opinion', 'Investigative'
+  ];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (regionDropdownRef.current && !regionDropdownRef.current.contains(event.target as Node)) {
+        setIsRegionDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -33,14 +61,22 @@ export default function UploadNewsPage() {
     }));
   };
 
-  const addTag = () => {
-    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
+
+  const addSuggestedTag = (tag: string) => {
+    if (!formData.tags.includes(tag)) {
       setFormData(prev => ({
         ...prev,
-        tags: [...prev.tags, newTag.trim()]
+        tags: [...prev.tags, tag]
       }));
-      setNewTag('');
     }
+  };
+
+  const handleRegionSelect = (region: string) => {
+    setFormData(prev => ({
+      ...prev,
+      region
+    }));
+    setIsRegionDropdownOpen(false);
   };
 
   const removeTag = (tagToRemove: string) => {
@@ -48,6 +84,14 @@ export default function UploadNewsPage() {
       ...prev,
       tags: prev.tags.filter(tag => tag !== tagToRemove)
     }));
+  };
+
+  const handleImagePreview = () => {
+    if (formData.imageUrl.trim()) {
+      setShowImagePreview(!showImagePreview);
+    } else {
+      alert('Please enter an image URL first');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,11 +120,6 @@ export default function UploadNewsPage() {
         setIsSubmitting(false);
         return;
       }
-      if (!formData.category) {
-        alert('Please select a category');
-        setIsSubmitting(false);
-        return;
-      }
       if (!formData.region) {
         alert('Please select a region');
         setIsSubmitting(false);
@@ -91,13 +130,17 @@ export default function UploadNewsPage() {
         setIsSubmitting(false);
         return;
       }
+      if (formData.tags.length === 0) {
+        alert('Please add at least one tag');
+        setIsSubmitting(false);
+        return;
+      }
       
       const articleData = {
         title: formData.title.trim(),
         summary: formData.summary.trim(),
         content: formData.content.trim(),
         journalistName: formData.journalistName.trim(),
-        category: formData.category,
         region: formData.region,
         source: formData.source.trim(),
         imageUrl: formData.imageUrl.trim(),
@@ -127,7 +170,6 @@ export default function UploadNewsPage() {
         summary: '',
         content: '',
         journalistName: '',
-        category: '',
         region: '',
         source: '',
         imageUrl: '',
@@ -163,26 +205,17 @@ export default function UploadNewsPage() {
             <div className="flex space-x-3">
               <button 
                 type="button"
-                onClick={async () => {
-                  const success = await testFirebaseConnection();
-                  alert(success ? 'Firebase connection successful!' : 'Firebase connection failed!');
-                }}
-                className="px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors text-sm font-medium"
+                onClick={handleImagePreview}
+                className="px-6 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors font-medium flex items-center"
               >
-                Test Firebase
-              </button>
-              <button 
-                type="button"
-                className="px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors text-sm font-medium"
-              >
-                <Eye className="w-4 h-4 inline mr-2" />
-                Preview
+                <Image className="w-4 h-4 mr-2" />
+                {showImagePreview ? 'Hide Preview' : 'Show Preview'}
               </button>
               <button 
                 type="submit"
                 form="article-form"
                 disabled={isSubmitting}
-                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-gradient-to-r from-[#5E8BA8] to-[#4A6F8C] text-white rounded-lg hover:from-[#4A6F8C] hover:to-[#2F4A61] transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <>
@@ -214,7 +247,7 @@ export default function UploadNewsPage() {
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-lg font-medium"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-lg font-medium text-gray-900"
                 placeholder="Enter compelling article title..."
                 required
               />
@@ -231,7 +264,7 @@ export default function UploadNewsPage() {
                 value={formData.summary}
                 onChange={handleInputChange}
                 rows={4}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none text-gray-900"
                 placeholder="Write a compelling summary that captures the essence of your article..."
                 required
               />
@@ -263,61 +296,49 @@ export default function UploadNewsPage() {
                   name="journalistName"
                   value={formData.journalistName}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
                   placeholder="Dr. Sarah Chen"
                   required
                 />
               </div>
 
-              {/* Category */}
-              <div className="space-y-2">
-                <label htmlFor="category" className="block text-sm font-semibold text-gray-900">
-                  <Tag className="w-4 h-4 inline mr-2" />
-                  Category *
-                </label>
-                <select
-                  id="category"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  required
-                >
-                  <option value="">Select category...</option>
-                  <option value="Technology">Technology</option>
-                  <option value="Business">Business</option>
-                  <option value="Health">Health</option>
-                  <option value="Sports">Sports</option>
-                  <option value="Entertainment">Entertainment</option>
-                  <option value="Science">Science</option>
-                  <option value="Politics">Politics</option>
-                  <option value="World">World</option>
-                </select>
-              </div>
 
               {/* Region */}
               <div className="space-y-2">
-                <label htmlFor="region" className="block text-sm font-semibold text-gray-900">
+                <label className="block text-sm font-semibold text-gray-900">
                   <Globe className="w-4 h-4 inline mr-2" />
                   Region *
                 </label>
-                <select
-                  id="region"
-                  name="region"
-                  value={formData.region}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  required
-                >
-                  <option value="">Select region...</option>
-                  <option value="World">World</option>
-                  <option value="North America">North America</option>
-                  <option value="Europe">Europe</option>
-                  <option value="Asia">Asia</option>
-                  <option value="Africa">Africa</option>
-                  <option value="South America">South America</option>
-                  <option value="Oceania">Oceania</option>
-                </select>
+                <div className="relative" ref={regionDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsRegionDropdownOpen(!isRegionDropdownOpen)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between"
+                  >
+                    <span className="text-gray-900">
+                      {formData.region || 'Select region...'}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isRegionDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {isRegionDropdownOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
+                      {regionOptions.map((region) => (
+                        <button
+                          key={region}
+                          type="button"
+                          onClick={() => handleRegionSelect(region)}
+                          className="w-full px-4 py-3 text-left text-white hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg flex items-center justify-between"
+                        >
+                          <span>{region}</span>
+                          {formData.region === region && (
+                            <Check className="w-3 h-3 text-white" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -327,68 +348,156 @@ export default function UploadNewsPage() {
                 <Image className="w-4 h-4 inline mr-2" />
                 Featured Image URL *
               </label>
-              <div className="flex space-x-3">
-                <input
-                  type="url"
-                  id="imageUrl"
-                  name="imageUrl"
-                  value={formData.imageUrl}
-                  onChange={handleInputChange}
-                  className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  placeholder="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop"
-                  required
-                />
-                <button
-                  type="button"
-                  className="px-6 py-3 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors font-medium"
-                >
-                  <Image className="w-4 h-4 inline mr-2" />
-                  Upload
-                </button>
-              </div>
+              <input
+                type="url"
+                id="imageUrl"
+                name="imageUrl"
+                value={formData.imageUrl}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                placeholder="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop"
+                required
+              />
             </div>
+              
+            {/* Article Preview with Image */}
+            {showImagePreview && formData.imageUrl && (
+              <div className="mt-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">How your article will look:</h4>
+                <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+                  {/* Article Header */}
+                  <div className="p-6 border-b border-gray-100">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-3 leading-tight">
+                          {formData.title || 'Article Title'}
+                        </h2>
+                        {formData.summary && (
+                          <p className="text-gray-600 text-lg leading-relaxed">{formData.summary}</p>
+                        )}
+                      </div>
+                      <div className="ml-6 flex-shrink-0">
+                        <img
+                          src={formData.imageUrl}
+                          alt="Article preview"
+                          className="w-32 h-24 object-cover rounded-lg"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Article Meta */}
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                        {formData.journalistName && (
+                          <span className="flex items-center">
+                            <User className="w-4 h-4 mr-1" />
+                            {formData.journalistName}
+                          </span>
+                        )}
+                        {formData.source && (
+                          <span>Source: {formData.source}</span>
+                        )}
+                        {formData.readTime && (
+                          <span className="flex items-center">
+                            <Clock className="w-4 h-4 mr-1" />
+                            {formData.readTime} min read
+                          </span>
+                        )}
+                        {formData.region && (
+                          <span className="flex items-center">
+                            <Globe className="w-4 h-4 mr-1" />
+                            {formData.region}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Tags */}
+                    {formData.tags.length > 0 && (
+                      <div className="p-6 bg-gray-50">
+                        <div className="flex flex-wrap gap-2">
+                          {formData.tags.map((tag, index) => (
+                            <span
+                              key={index}
+                              className="px-3 py-1 bg-white text-gray-700 rounded-full text-sm font-medium border border-gray-200"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Article Content Preview */}
+                    {formData.content && (
+                      <div className="p-6 border-t border-gray-100">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">Content Preview</h4>
+                        <div 
+                          className="prose prose-sm max-w-none"
+                          dangerouslySetInnerHTML={{ __html: formData.content }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
-            {/* Tags */}
+            {/* Categories */}
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-gray-900">
                 <Tag className="w-4 h-4 inline mr-2" />
-                Tags
+                Category *
               </label>
-              <div className="flex space-x-3">
-                <input
-                  type="text"
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                  className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  placeholder="Add a tag and press Enter..."
-                />
-                <button
-                  type="button"
-                  onClick={addTag}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                >
-                  <Plus className="w-4 h-4 inline mr-2" />
-                  Add
-                </button>
-              </div>
-              {formData.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {formData.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
-                    >
-                      {tag}
+              <p className="text-sm text-gray-500">Select categories from the suggestions below</p>
+              
+              {/* Suggested Categories */}
+              <div className="space-y-3">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Suggested Categories:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {suggestedTags.map((tag) => (
                       <button
+                        key={tag}
                         type="button"
-                        onClick={() => removeTag(tag)}
-                        className="ml-2 text-blue-600 hover:text-blue-800"
+                        onClick={() => addSuggestedTag(tag)}
+                        disabled={formData.tags.includes(tag)}
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                          formData.tags.includes(tag)
+                            ? 'bg-blue-100 text-blue-800 cursor-not-allowed'
+                            : 'bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-800'
+                        }`}
                       >
-                        <X className="w-3 h-3" />
+                        {formData.tags.includes(tag) ? '✓ ' : ''}{tag}
                       </button>
-                    </span>
-                  ))}
+                    ))}
+                  </div>
+                </div>
+                
+              </div>
+              
+              {/* Selected Categories */}
+              {formData.tags.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Selected Categories ({formData.tags.length}):</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => removeTag(tag)}
+                          className="ml-2 text-blue-600 hover:text-blue-800"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -396,7 +505,7 @@ export default function UploadNewsPage() {
         </div>
 
         {/* Preview */}
-        {formData.title && (
+        {(formData.title || formData.imageUrl) && (
           <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
             <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
               <Eye className="w-5 h-5 mr-2 text-blue-600" />
@@ -407,7 +516,9 @@ export default function UploadNewsPage() {
               <div className="p-6 border-b border-gray-100">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-3 leading-tight">{formData.title}</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3 leading-tight">
+                      {formData.title || 'Article Title'}
+                    </h2>
                     {formData.summary && (
                       <p className="text-gray-600 text-lg leading-relaxed">{formData.summary}</p>
                     )}
@@ -417,9 +528,10 @@ export default function UploadNewsPage() {
                       <img
                         src={formData.imageUrl}
                         alt="Article preview"
-                        className="w-32 h-24 object-cover rounded-lg"
+                        className="w-40 h-32 object-cover rounded-lg shadow-sm"
                         onError={(e) => {
-                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYwIiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDE2MCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNjAiIGhlaWdodD0iMTI4IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik02NCA0OEg5NlY4MEg2NFY0OFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHBhdGggZD0iTTQ4IDY0SDExMlY5Nkg0OFY2NFoiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+';
+                          e.currentTarget.alt = 'Image failed to load';
                         }}
                       />
                     </div>
@@ -441,11 +553,6 @@ export default function UploadNewsPage() {
                     <span className="flex items-center">
                       <Clock className="w-4 h-4 mr-1" />
                       {formData.readTime} min read
-                    </span>
-                  )}
-                  {formData.category && (
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                      {formData.category}
                     </span>
                   )}
                   {formData.region && (
@@ -475,14 +582,13 @@ export default function UploadNewsPage() {
               
               {/* Article Content Preview */}
               {formData.content && (
-                <div className="p-6 border-t border-gray-100">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Content Preview</h4>
-                  <div className="prose prose-sm max-w-none">
-                    <pre className="whitespace-pre-wrap font-sans text-gray-700 leading-relaxed">
-                      {formData.content}
-                    </pre>
+                  <div className="p-6 border-t border-gray-100">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Content Preview</h4>
+                    <div 
+                      className="prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: formData.content }}
+                    />
                   </div>
-                </div>
               )}
             </div>
           </div>

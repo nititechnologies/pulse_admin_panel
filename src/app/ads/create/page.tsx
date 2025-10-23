@@ -1,21 +1,42 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Layout from '@/components/Layout';
-import { Plus, Image, Target, DollarSign, Save, Eye } from 'lucide-react';
+import { Plus, Image, DollarSign, Save, Eye, ChevronDown, Check } from 'lucide-react';
 
 export default function CreateAdPage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    type: 'banner',
-    targetAudience: '',
     budget: '',
     duration: '',
     imageUrl: '',
-    linkUrl: '',
     status: 'draft',
   });
+
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const statusDropdownRef = useRef(null);
+
+  const statusOptions = [
+    { value: 'draft', label: 'Draft' },
+    { value: 'active', label: 'Active' },
+    { value: 'paused', label: 'Paused' },
+    { value: 'scheduled', label: 'Scheduled' }
+  ];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) {
+        setIsStatusDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -23,6 +44,14 @@ export default function CreateAdPage() {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleStatusSelect = (status: string) => {
+    setFormData(prev => ({
+      ...prev,
+      status
+    }));
+    setIsStatusDropdownOpen(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -53,7 +82,7 @@ export default function CreateAdPage() {
               </button>
               <button 
                 onClick={handleSubmit}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-[#5E8BA8] text-white rounded-lg hover:bg-[#4A6F8C] transition-colors"
               >
                 <Save className="w-4 h-4 inline mr-2" />
                 Create Campaign
@@ -66,42 +95,20 @@ export default function CreateAdPage() {
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-                  Campaign Title *
-                </label>
-                <input
-                  type="text"
-                  id="title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter campaign title..."
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
-                  Ad Type *
-                </label>
-                <select
-                  id="type"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="banner">Banner Ad</option>
-                  <option value="video">Video Ad</option>
-                  <option value="display">Display Ad</option>
-                  <option value="native">Native Ad</option>
-                  <option value="social">Social Media Ad</option>
-                </select>
-              </div>
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                Campaign Title *
+              </label>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                placeholder="Enter campaign title..."
+                required
+              />
             </div>
 
             {/* Description */}
@@ -115,35 +122,14 @@ export default function CreateAdPage() {
                 value={formData.description}
                 onChange={handleInputChange}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                 placeholder="Describe your campaign..."
                 required
               />
             </div>
 
-            {/* Targeting and Budget */}
+            {/* Budget and Duration */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="targetAudience" className="block text-sm font-medium text-gray-700 mb-2">
-                  Target Audience
-                </label>
-                <select
-                  id="targetAudience"
-                  name="targetAudience"
-                  value={formData.targetAudience}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select target audience...</option>
-                  <option value="all">All Users</option>
-                  <option value="tech">Tech Enthusiasts</option>
-                  <option value="business">Business Professionals</option>
-                  <option value="health">Health & Wellness</option>
-                  <option value="sports">Sports Fans</option>
-                  <option value="entertainment">Entertainment</option>
-                </select>
-              </div>
-
               <div>
                 <label htmlFor="budget" className="block text-sm font-medium text-gray-700 mb-2">
                   Budget ($)
@@ -154,118 +140,161 @@ export default function CreateAdPage() {
                   name="budget"
                   value={formData.budget}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                   placeholder="Enter budget amount..."
                   min="0"
                   step="0.01"
                 />
               </div>
-            </div>
-
-            {/* Duration */}
-            <div>
-              <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
-                Campaign Duration (days)
-              </label>
-              <input
-                type="number"
-                id="duration"
-                name="duration"
-                value={formData.duration}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter duration in days..."
-                min="1"
-              />
-            </div>
-
-            {/* Creative Assets */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-2">
-                  Ad Image URL
-                </label>
-                <div className="flex space-x-3">
-                  <input
-                    type="url"
-                    id="imageUrl"
-                    name="imageUrl"
-                    value={formData.imageUrl}
-                    onChange={handleInputChange}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                  <button
-                    type="button"
-                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <Image className="w-4 h-4 inline mr-2" />
-                    Upload
-                  </button>
-                </div>
-              </div>
 
               <div>
-                <label htmlFor="linkUrl" className="block text-sm font-medium text-gray-700 mb-2">
-                  Landing Page URL
+                <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
+                  Campaign Duration (days)
                 </label>
                 <input
-                  type="url"
-                  id="linkUrl"
-                  name="linkUrl"
-                  value={formData.linkUrl}
+                  type="number"
+                  id="duration"
+                  name="duration"
+                  value={formData.duration}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="https://example.com/landing-page"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  placeholder="Enter duration in days..."
+                  min="1"
                 />
+              </div>
+            </div>
+
+            {/* Ad Image */}
+            <div>
+              <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                Ad Image URL *
+              </label>
+              <div className="flex space-x-3">
+                <input
+                  type="url"
+                  id="imageUrl"
+                  name="imageUrl"
+                  value={formData.imageUrl}
+                  onChange={handleInputChange}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  placeholder="https://example.com/image.jpg"
+                  required
+                />
+                <button
+                  type="button"
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <Image className="w-4 h-4 inline mr-2" />
+                  Upload
+                </button>
               </div>
             </div>
 
             {/* Status */}
             <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Campaign Status
               </label>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="draft">Draft</option>
-                <option value="active">Active</option>
-                <option value="paused">Paused</option>
-                <option value="scheduled">Scheduled</option>
-              </select>
+              <div className="relative" ref={statusDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-gray-900"
+                >
+                  <span>
+                    {statusOptions.find(opt => opt.value === formData.status)?.label || 'Draft'}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {isStatusDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
+                    {statusOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => handleStatusSelect(option.value)}
+                        className="w-full px-3 py-2 text-left text-white hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg flex items-center justify-between"
+                      >
+                        <span>{option.label}</span>
+                        {formData.status === option.value && <Check className="w-3 h-3 text-white" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </form>
         </div>
 
         {/* Preview */}
-        {formData.title && (
+        {(formData.title || formData.imageUrl) && (
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Campaign Preview</h3>
-            <div className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center space-x-4">
-                {formData.imageUrl && (
-                  <img
-                    src={formData.imageUrl}
-                    alt="Ad preview"
-                    className="w-32 h-20 object-cover rounded-lg"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                )}
-                <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900 mb-2">{formData.title}</h4>
-                  <p className="text-sm text-gray-600 mb-2">{formData.description}</p>
-                  <div className="flex items-center space-x-4 text-xs text-gray-500">
-                    <span>Type: {formData.type}</span>
-                    <span>Budget: ${formData.budget}</span>
-                    <span>Duration: {formData.duration} days</span>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Ad Preview</h3>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="text-center text-sm text-gray-500 mb-3">How your ad will appear:</div>
+              
+              {/* Ad Preview Container */}
+              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm max-w-md mx-auto">
+                {/* Ad Header */}
+                <div className="bg-blue-600 text-white px-4 py-2 text-sm font-medium">
+                  Advertisement
+                </div>
+                
+                {/* Ad Content */}
+                <div className="p-4">
+                  {formData.imageUrl ? (
+                    <div className="space-y-3">
+                      <img
+                        src={formData.imageUrl}
+                        alt="Ad preview"
+                        className="w-full h-48 object-cover rounded-lg"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                      <div className="hidden bg-gray-200 h-48 rounded-lg flex items-center justify-center">
+                        <div className="text-center text-gray-500">
+                          <Image className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                          <p className="text-sm">Image failed to load</p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-200 h-48 rounded-lg flex items-center justify-center">
+                      <div className="text-center text-gray-500">
+                        <Image className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                        <p className="text-sm">No image provided</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {formData.title && (
+                    <div className="mt-4">
+                      <h4 className="font-semibold text-gray-900 text-lg leading-tight">{formData.title}</h4>
+                      {formData.description && (
+                        <p className="text-gray-600 text-sm mt-2 leading-relaxed">{formData.description}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Ad Footer */}
+                <div className="bg-gray-50 px-4 py-2 border-t border-gray-200">
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <span>Sponsored Content</span>
+                    <span>Learn More</span>
                   </div>
+                </div>
+              </div>
+              
+              {/* Campaign Info */}
+              <div className="mt-4 text-center">
+                <div className="inline-flex items-center space-x-4 text-sm text-gray-500 bg-gray-100 rounded-lg px-4 py-2">
+                  {formData.budget && <span>Budget: ${formData.budget}</span>}
+                  {formData.duration && <span>Duration: {formData.duration} days</span>}
+                  {formData.status && <span>Status: {formData.status}</span>}
                 </div>
               </div>
             </div>

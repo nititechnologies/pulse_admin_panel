@@ -1,20 +1,72 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Layout from '@/components/Layout';
 import { getArticles, deleteArticle, Article } from '@/lib/articles';
-import { Search, Filter, Edit, Trash2, Eye, MoreVertical, Calendar, User, Tag } from 'lucide-react';
+import { Search, Trash2, Eye, Calendar, User, Tag, ChevronDown, Check } from 'lucide-react';
 
 export default function ManageNewsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const categoryDropdownRef = useRef(null);
+  const statusDropdownRef = useRef(null);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+
+  const categoryOptions = [
+    'all',
+    'Technical',
+    'Political',
+    'Education',
+    'Health',
+    'Sports',
+    'Entertainment',
+    'Business',
+    'Science',
+    'Environment',
+    'Technology',
+    'Economy',
+    'Social',
+    'International',
+    'Local',
+    'Breaking',
+    'Analysis',
+    'Opinion',
+    'Investigative'
+  ];
+
+  const statusOptions = [
+    { value: 'all', label: 'All Status' },
+    { value: 'published', label: 'Published' },
+    { value: 'draft', label: 'Draft' },
+    { value: 'scheduled', label: 'Scheduled' }
+  ];
 
   useEffect(() => {
     fetchArticles();
+  }, []);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+        setIsCategoryDropdownOpen(false);
+      }
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) {
+        setIsStatusDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const fetchArticles = async () => {
@@ -41,6 +93,16 @@ export default function ManageNewsPage() {
         alert('Failed to delete article');
       }
     }
+  };
+
+  const handleReviewArticle = (article: Article) => {
+    setSelectedArticle(article);
+    setShowReviewModal(true);
+  };
+
+  const closeReviewModal = () => {
+    setShowReviewModal(false);
+    setSelectedArticle(null);
   };
 
   const filteredArticles = articles.filter(article => {
@@ -70,17 +132,9 @@ export default function ManageNewsPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Manage News Articles</h1>
-              <p className="text-gray-600">Edit, delete, and organize your articles</p>
-            </div>
-            <div className="flex space-x-3">
-              <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-                <Filter className="w-4 h-4 inline mr-2" />
-                Filters
-              </button>
-            </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Manage News Articles</h1>
+            <p className="text-gray-600">Edit, delete, and organize your articles</p>
           </div>
         </div>
 
@@ -96,39 +150,79 @@ export default function ManageNewsPage() {
                   placeholder="Search articles..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                 />
               </div>
             </div>
 
             {/* Category Filter */}
             <div>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">All Categories</option>
-                <option value="technology">Technology</option>
-                <option value="business">Business</option>
-                <option value="health">Health</option>
-                <option value="sports">Sports</option>
-                <option value="entertainment">Entertainment</option>
-              </select>
+              <div className="relative" ref={categoryDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm"
+                >
+                  <span className="text-gray-900">
+                    {selectedCategory === 'all' ? 'All Categories' : selectedCategory}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {isCategoryDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
+                    <button
+                      key="all"
+                      onClick={() => { setSelectedCategory('all'); setIsCategoryDropdownOpen(false); }}
+                      className="w-full px-3 py-2 text-left text-white hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg flex items-center justify-between text-sm"
+                    >
+                      <span>All Categories</span>
+                      {selectedCategory === 'all' && <Check className="w-3 h-3 text-white" />}
+                    </button>
+                    {categoryOptions.filter(opt => opt !== 'all').map((category) => (
+                      <button
+                        key={category}
+                        onClick={() => { setSelectedCategory(category); setIsCategoryDropdownOpen(false); }}
+                        className="w-full px-3 py-2 text-left text-white hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg flex items-center justify-between text-sm"
+                      >
+                        <span>{category}</span>
+                        {selectedCategory === category && <Check className="w-3 h-3 text-white" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Status Filter */}
             <div>
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">All Status</option>
-                <option value="published">Published</option>
-                <option value="draft">Draft</option>
-                <option value="scheduled">Scheduled</option>
-              </select>
+              <div className="relative" ref={statusDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm"
+                >
+                  <span className="text-gray-900">
+                    {statusOptions.find(opt => opt.value === selectedStatus)?.label || 'All Status'}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {isStatusDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
+                    {statusOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => { setSelectedStatus(option.value); setIsStatusDropdownOpen(false); }}
+                        className="w-full px-3 py-2 text-left text-white hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg flex items-center justify-between text-sm"
+                      >
+                        <span>{option.label}</span>
+                        {selectedStatus === option.value && <Check className="w-3 h-3 text-white" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -218,20 +312,17 @@ export default function ManageNewsPage() {
 
                       {/* Actions */}
                       <div className="flex items-center space-x-2">
-                        <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                        <button 
+                          onClick={() => handleReviewArticle(article)}
+                          className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                        >
                           <Eye className="w-4 h-4" />
-                        </button>
-                        <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors">
-                          <Edit className="w-4 h-4" />
                         </button>
                         <button 
                           onClick={() => handleDeleteArticle(article.id!)}
                           className="p-2 text-gray-400 hover:text-red-600 transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
-                        </button>
-                        <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                          <MoreVertical className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
@@ -252,7 +343,7 @@ export default function ManageNewsPage() {
                 <button className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
                   Previous
                 </button>
-                <button className="px-3 py-1 bg-blue-600 text-white rounded text-sm">
+                <button className="px-3 py-1 bg-[#5E8BA8] text-white rounded text-sm hover:bg-[#4A6F8C] transition-colors">
                   1
                 </button>
                 <button className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
@@ -262,6 +353,117 @@ export default function ManageNewsPage() {
             </div>
           </div>
         </div>
+
+        {/* Review Modal */}
+        {showReviewModal && selectedArticle && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+              {/* Modal Header */}
+              <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">Article Review</h2>
+                <button
+                  onClick={closeReviewModal}
+                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <div className="space-y-6">
+                  {/* Article Header */}
+                  <div className="border border-gray-200 rounded-xl overflow-hidden">
+                    <div className="p-6 border-b border-gray-100">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <h3 className="text-2xl font-bold text-gray-900 mb-3 leading-tight">
+                            {selectedArticle.title}
+                          </h3>
+                          {selectedArticle.summary && (
+                            <p className="text-gray-600 text-lg leading-relaxed">{selectedArticle.summary}</p>
+                          )}
+                        </div>
+                        {selectedArticle.imageUrl && (
+                          <div className="ml-6 flex-shrink-0">
+                            <img
+                              src={selectedArticle.imageUrl}
+                              alt="Article preview"
+                              className="w-40 h-32 object-cover rounded-lg shadow-sm"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Article Meta */}
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                        {selectedArticle.journalistName && (
+                          <span className="flex items-center">
+                            <User className="w-4 h-4 mr-1" />
+                            {selectedArticle.journalistName}
+                          </span>
+                        )}
+                        <span className="flex items-center">
+                          <Calendar className="w-4 h-4 mr-1" />
+                          {new Date(selectedArticle.publishedAt).toLocaleDateString()}
+                        </span>
+                        {selectedArticle.region && (
+                          <span className="flex items-center">
+                            <Tag className="w-4 h-4 mr-1" />
+                            {selectedArticle.region}
+                          </span>
+                        )}
+                        <span>{selectedArticle.views || 0} views</span>
+                      </div>
+                    </div>
+                    
+                    {/* Tags */}
+                    {selectedArticle.tags && selectedArticle.tags.length > 0 && (
+                      <div className="p-6 bg-gray-50">
+                        <div className="flex flex-wrap gap-2">
+                          {selectedArticle.tags.map((tag, index) => (
+                            <span
+                              key={index}
+                              className="px-3 py-1 bg-white text-gray-700 rounded-full text-sm font-medium border border-gray-200"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Article Content */}
+                    {selectedArticle.content && (
+                      <div className="p-6 border-t border-gray-100">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">Article Content</h4>
+                        <div 
+                          className="prose prose-sm max-w-none"
+                          dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-6 border-t border-gray-200 flex justify-end space-x-3">
+                <button
+                  onClick={closeReviewModal}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );

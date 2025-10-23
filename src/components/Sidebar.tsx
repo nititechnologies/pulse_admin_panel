@@ -12,7 +12,8 @@ import {
   Upload,
   Settings,
   Plus,
-  Users
+  Users,
+  UserCheck
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -24,6 +25,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const [expandedNews, setExpandedNews] = useState(true);
   const [expandedAds, setExpandedAds] = useState(true);
+  const [expandedUsers, setExpandedUsers] = useState(true);
 
   const isActive = (path: string) => pathname === path;
 
@@ -54,20 +56,29 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         { label: 'Manage Ads', path: '/ads/manage', icon: Settings },
       ],
     },
+    {
+      id: 'users',
+      label: 'Manage Users',
+      icon: UserCheck,
+      path: '/users',
+      submenu: [
+        { label: 'All Users', path: '/users', icon: Users },
+      ],
+    },
   ];
 
   return (
-    <div className={`fixed left-0 top-0 h-full bg-white border-r border-gray-200 transition-all duration-300 z-50 ${
+    <div className={`fixed left-0 top-0 h-full bg-[#2F4A61] transition-all duration-300 z-50 ${
       isOpen ? 'w-64' : 'w-16'
     }`}>
       {/* Logo */}
-      <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
+      <div className="flex items-center justify-center h-16 px-4 border-b border-[#4A6F8C]">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-[#5E8BA8] rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">P</span>
           </div>
           {isOpen && (
-            <span className="text-xl font-bold text-gray-800">Pulse Admin</span>
+            <span className="text-xl font-bold text-white">PULSE</span>
           )}
         </div>
       </div>
@@ -78,7 +89,9 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const hasSubmenu = item.submenu && item.submenu.length > 0;
-            const isExpanded = item.id === 'news' ? expandedNews : item.id === 'ads' ? expandedAds : false;
+            const isExpanded = item.id === 'news' ? expandedNews : 
+                             item.id === 'ads' ? expandedAds : 
+                             item.id === 'users' ? expandedUsers : false;
 
             return (
               <div key={item.id}>
@@ -86,14 +99,16 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                   <div
                     className={`flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-colors ${
                       isActive(item.path)
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'text-gray-700 hover:bg-gray-50'
+                        ? 'bg-[#5E8BA8] text-white'
+                        : 'text-gray-300 hover:bg-[#4A6F8C]'
                     }`}
                     onClick={() => {
                       if (item.id === 'news') {
                         setExpandedNews(!expandedNews);
                       } else if (item.id === 'ads') {
                         setExpandedAds(!expandedAds);
+                      } else if (item.id === 'users') {
+                        setExpandedUsers(!expandedUsers);
                       }
                     }}
                   >
@@ -116,8 +131,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                     href={item.path}
                     className={`flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                       isActive(item.path)
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'text-gray-700 hover:bg-gray-50'
+                        ? 'bg-[#5E8BA8] text-white'
+                        : 'text-gray-300 hover:bg-[#4A6F8C]'
                     }`}
                   >
                     <div className="flex items-center space-x-3">
@@ -138,8 +153,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                           href={subItem.path}
                           className={`flex items-center space-x-3 px-3 py-2 text-sm rounded-lg transition-colors ${
                             isActive(subItem.path)
-                              ? 'bg-blue-50 text-blue-700'
-                              : 'text-gray-600 hover:bg-gray-50'
+                              ? 'bg-[#5E8BA8] text-white'
+                              : 'text-gray-400 hover:bg-[#4A6F8C]'
                           }`}
                         >
                           <SubIcon className="w-4 h-4" />
@@ -156,15 +171,15 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       </nav>
 
       {/* User info */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#4A6F8C]">
         {isOpen && (
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-              <Users className="w-4 h-4 text-gray-600" />
+            <div className="w-8 h-8 bg-[#5E8BA8] rounded-full flex items-center justify-center">
+              <Users className="w-4 h-4 text-white" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900">Admin User</p>
-              <p className="text-xs text-gray-500">admin@pulse.com</p>
+              <p className="text-sm font-medium text-white">Admin User</p>
+              <p className="text-xs text-gray-400">admin@pulse.com</p>
             </div>
           </div>
         )}

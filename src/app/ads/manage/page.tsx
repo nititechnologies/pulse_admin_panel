@@ -269,7 +269,7 @@ export default function ManageAdsPage() {
                 <button className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
                   Previous
                 </button>
-                <button className="px-3 py-1 bg-blue-600 text-white rounded text-sm">
+                <button className="px-3 py-1 bg-[#5E8BA8] text-white rounded text-sm hover:bg-[#4A6F8C] transition-colors">
                   1
                 </button>
                 <button className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
