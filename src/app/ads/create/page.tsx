@@ -15,7 +15,7 @@ export default function CreateAdPage() {
   });
 
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
-  const statusDropdownRef = useRef(null);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
 
   const statusOptions = [
     { value: 'draft', label: 'Draft' },

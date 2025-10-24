@@ -1,3 +1,5 @@
+'use client';
+
 import Layout from '@/components/Layout';
 import { BarChart3, TrendingUp, Eye, Users, Calendar } from 'lucide-react';
 

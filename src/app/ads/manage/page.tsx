@@ -4,14 +4,29 @@ import { useState } from 'react';
 import Layout from '@/components/Layout';
 import { Search, Trash2, Eye, Play, Pause } from 'lucide-react';
 
+interface Campaign {
+  id: number;
+  title: string;
+  type: string;
+  status: string;
+  impressions: number;
+  clicks: number;
+  ctr: number;
+  budget: number;
+  spent: number;
+  startDate: string;
+  endDate: string;
+  imageUrl: string;
+}
+
 export default function ManageAdsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
-  const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
-  const [campaigns, setCampaigns] = useState([
+  const [campaigns, setCampaigns] = useState<Campaign[]>([
     {
       id: 1,
       title: 'Summer Sale 2024',
@@ -106,7 +121,7 @@ export default function ManageAdsPage() {
     }
   };
 
-  const handleViewCampaign = (campaign) => {
+  const handleViewCampaign = (campaign: Campaign) => {
     setSelectedCampaign(campaign);
     setShowDetailsModal(true);
   };

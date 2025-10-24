@@ -2,7 +2,23 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Layout from '@/components/Layout';
-import { Search, UserCheck, UserX, Mail, Phone, TrendingUp, ChevronDown, Check } from 'lucide-react';
+import { Search, UserCheck, UserX, Mail, Phone, Calendar, TrendingUp, Clock, ChevronDown, Check } from 'lucide-react';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  status: string;
+  joinDate: string;
+  lastActive: string;
+  profileImage: string;
+  recentArticles: Array<{
+    title: string;
+    date: string;
+    views: number;
+  }>;
+}
 
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -12,14 +28,14 @@ export default function UsersPage() {
   const [joinDateTo, setJoinDateTo] = useState('');
   const [lastActiveFrom, setLastActiveFrom] = useState('');
   const [lastActiveTo, setLastActiveTo] = useState('');
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const dropdownRef = useRef(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
     };
@@ -36,7 +52,7 @@ export default function UsersPage() {
     { value: 'inactive', label: 'Inactive Only' }
   ];
 
-  const handleFilterSelect = (value) => {
+  const handleFilterSelect = (value: string) => {
     setStatusFilter(value);
     setIsDropdownOpen(false);
   };
@@ -173,7 +189,7 @@ export default function UsersPage() {
     console.log(`User ${id} status updated to ${newStatus}`);
   };
 
-  const handleViewProfile = (user: { id: number; name: string; email: string; role: string; status: string; joinDate: string; articles: number; avatar?: string }) => {
+  const handleViewProfile = (user: User) => {
     setSelectedUser(user);
     setShowDetailsModal(true);
   };
@@ -181,6 +197,29 @@ export default function UsersPage() {
   const closeDetailsModal = () => {
     setShowDetailsModal(false);
     setSelectedUser(null);
+  };
+
+  const getStatusColor = (status: string) => {
+    return status === 'active' 
+      ? 'bg-green-100 text-green-800' 
+      : 'bg-red-100 text-red-800';
+  };
+
+  const getStatusIcon = (status: string) => {
+    return status === 'active' ? <UserCheck className="w-4 h-4" /> : <UserX className="w-4 h-4" />;
+  };
+
+  const getRoleColor = (role: string) => {
+    switch (role.toLowerCase()) {
+      case 'administrator':
+        return 'bg-purple-100 text-purple-800';
+      case 'editor':
+        return 'bg-blue-100 text-blue-800';
+      case 'journalist':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
   return (

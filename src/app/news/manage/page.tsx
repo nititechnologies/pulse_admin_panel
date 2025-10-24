@@ -11,8 +11,8 @@ export default function ManageNewsPage() {
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
-  const categoryDropdownRef = useRef(null);
-  const statusDropdownRef = useRef(null);
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

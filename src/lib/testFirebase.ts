@@ -17,10 +17,11 @@ export const testFirebaseConnection = async () => {
     return true;
   } catch (error) {
     console.error('Firebase test failed:', error);
+    const errorObj = error as { code?: string; message: string; stack?: string };
     console.error('Error details:', {
-      code: error.code,
-      message: error.message,
-      stack: error.stack
+      code: errorObj.code,
+      message: errorObj.message,
+      stack: errorObj.stack
     });
     return false;
   }

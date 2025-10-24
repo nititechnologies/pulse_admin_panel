@@ -18,9 +18,10 @@ import {
 
 interface SidebarProps {
   isOpen: boolean;
+  onToggle: () => void;
 }
 
-export default function Sidebar({ isOpen }: SidebarProps) {
+export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const [expandedNews, setExpandedNews] = useState(true);
   const [expandedAds, setExpandedAds] = useState(true);

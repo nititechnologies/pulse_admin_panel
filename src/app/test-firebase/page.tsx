@@ -15,7 +15,7 @@ export default function FirebaseTest() {
       const success = await testFirebaseConnection();
       setTestResult(success ? '✅ Firebase connection successful!' : '❌ Firebase connection failed!');
     } catch (error) {
-      setTestResult(`❌ Error: ${error.message}`);
+      setTestResult(`❌ Error: ${(error as Error).message}`);
     } finally {
       setLoading(false);
     }
@@ -41,7 +41,7 @@ export default function FirebaseTest() {
       const articleId = await addArticle(testArticle);
       setTestResult(`✅ Article uploaded successfully! ID: ${articleId}`);
     } catch (error) {
-      setTestResult(`❌ Article upload failed: ${error.message}`);
+      setTestResult(`❌ Article upload failed: ${(error as Error).message}`);
     } finally {
       setLoading(false);
     }

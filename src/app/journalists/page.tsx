@@ -5,10 +5,29 @@ import Layout from '@/components/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { Search, UserCheck, UserX, Eye, Calendar, TrendingUp, Clock } from 'lucide-react';
 
+interface Journalist {
+  id: number;
+  name: string;
+  email: string;
+  status: string;
+  joinDate: string;
+  lastActive: string;
+  articlesCount: number;
+  totalViews: number;
+  avgEngagement: number;
+  profileImage?: string;
+  recentActivity: Array<{
+    type: string;
+    title: string;
+    date: string;
+    views: number;
+  }>;
+}
+
 export default function JournalistsPage() {
   const auth = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedJournalist, setSelectedJournalist] = useState(null);
+  const [selectedJournalist, setSelectedJournalist] = useState<Journalist | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   // Safely get isAdministrator with fallback
@@ -24,7 +43,7 @@ export default function JournalistsPage() {
               <UserX className="w-8 h-8 text-red-600" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
-            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <p className="text-gray-600 mb-4">You don&apos;t have permission to access this page.</p>
             <p className="text-sm text-gray-500">Only administrators can manage journalists.</p>
           </div>
         </div>
@@ -114,7 +133,7 @@ export default function JournalistsPage() {
     alert(`Journalist status updated to ${newStatus}`);
   };
 
-  const handleViewDetails = (journalist: any) => {
+  const handleViewDetails = (journalist: Journalist) => {
     setSelectedJournalist(journalist);
     setShowDetailsModal(true);
   };

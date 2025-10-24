@@ -47,8 +47,8 @@ export default function AuthPage() {
         await signUp(email, password);
       }
       router.push('/');
-    } catch (error: any) {
-      setError(error.message || 'An error occurred');
+    } catch (error) {
+      setError((error as Error).message || 'An error occurred');
     } finally {
       setLoading(false);
     }

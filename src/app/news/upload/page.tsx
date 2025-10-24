@@ -23,7 +23,7 @@ export default function UploadNewsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [isRegionDropdownOpen, setIsRegionDropdownOpen] = useState(false);
-  const regionDropdownRef = useRef(null);
+  const regionDropdownRef = useRef<HTMLDivElement>(null);
 
   const regionOptions = [
     'Eastern India',
@@ -141,6 +141,7 @@ export default function UploadNewsPage() {
         summary: formData.summary.trim(),
         content: formData.content.trim(),
         journalistName: formData.journalistName.trim(),
+        category: formData.tags.length > 0 ? formData.tags[0] : 'General',
         region: formData.region,
         source: formData.source.trim(),
         imageUrl: formData.imageUrl.trim(),

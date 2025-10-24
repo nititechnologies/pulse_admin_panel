@@ -27,7 +27,7 @@ export interface Article {
   publishedAt: string;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
-  status?: 'draft' | 'published' | 'archived';
+  status?: 'draft' | 'published' | 'archived' | 'removed';
   views?: number;
   likes?: number;
 }
@@ -52,10 +52,11 @@ export const addArticle = async (articleData: Omit<Article, 'id' | 'createdAt' |
     return docRef.id;
   } catch (error) {
     console.error('Error adding article to Firebase:', error);
+    const errorObj = error as { code?: string; message: string; stack?: string };
     console.error('Error details:', {
-      code: error.code,
-      message: error.message,
-      stack: error.stack
+      code: errorObj.code,
+      message: errorObj.message,
+      stack: errorObj.stack
     });
     throw error;
   }
