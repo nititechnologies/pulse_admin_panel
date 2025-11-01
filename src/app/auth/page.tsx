@@ -60,7 +60,7 @@ export default function AuthPage() {
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#E6EBF0] to-[#F0F0F0] relative overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center p-8">
           <img 
-            src="/image.png" 
+            src="/image%20copy.png" 
             alt="Welcome" 
             className="max-w-full max-h-full object-contain"
           />
@@ -72,10 +72,10 @@ export default function AuthPage() {
         <div className="w-full max-w-md">
           {/* Logo */}
           <div className="flex items-center mb-8">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#323232] to-black rounded-lg flex items-center justify-center mr-3 shadow-md">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-cyan-500 rounded-lg flex items-center justify-center mr-3 shadow-lg">
               <span className="text-white font-bold text-lg">P</span>
             </div>
-            <span className="text-2xl font-bold text-[#323232]">PULSE</span>
+            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">PULSE</span>
           </div>
 
           {/* Form */}
@@ -197,7 +197,7 @@ export default function AuthPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[#323232] to-black text-white py-3 px-4 rounded-lg font-medium hover:from-black hover:to-[#323232] focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
             >
               {loading ? (
                 <div className="flex items-center justify-center">

@@ -130,15 +130,15 @@ export default function ManageNewsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'published':
-        return 'bg-green-100 text-green-800';
+        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
       case 'removed':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 border-red-200';
       case 'draft':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-amber-100 text-amber-800 border-amber-200';
       case 'scheduled':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 border-blue-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-slate-100 text-slate-800 border-slate-200';
     }
   };
 
@@ -146,15 +146,15 @@ export default function ManageNewsPage() {
     <Layout title="Manage News">
       <div className="space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DCDCDC]">
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 shadow-lg text-white">
           <div>
-            <h1 className="text-2xl font-bold text-[#323232]">Manage News Articles</h1>
-            <p className="text-gray-600">Edit, delete, and organize your articles</p>
+            <h1 className="text-2xl font-bold text-white">Manage News Articles</h1>
+            <p className="text-blue-100">Edit, delete, and organize your articles</p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DCDCDC]">
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div className="md:col-span-2">
@@ -165,7 +165,7 @@ export default function ManageNewsPage() {
                   placeholder="Search articles..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#323232]"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800"
                 />
               </div>
             </div>
@@ -176,16 +176,16 @@ export default function ManageNewsPage() {
                 <button
                   type="button"
                   onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm"
                 >
-                  <span className="text-[#323232]">
+                  <span className="text-slate-800">
                     {selectedCategory === 'all' ? 'All Categories' : selectedCategory}
                   </span>
-                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 
                 {isCategoryDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50">
                     <button
                       key="all"
                       onClick={() => { setSelectedCategory('all'); setIsCategoryDropdownOpen(false); }}
@@ -215,16 +215,16 @@ export default function ManageNewsPage() {
                 <button
                   type="button"
                   onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm"
                 >
-                  <span className="text-[#323232]">
+                  <span className="text-slate-800">
                     {statusOptions.find(opt => opt.value === selectedStatus)?.label || 'All Status'}
                   </span>
-                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 
                 {isStatusDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50">
                     {statusOptions.map((option) => (
                       <button
                         key={option.value}
@@ -243,9 +243,9 @@ export default function ManageNewsPage() {
         </div>
 
         {/* Articles List */}
-        <div className="bg-white rounded-lg shadow-sm border border-[#DCDCDC]">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-[#323232]">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200">
+          <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-purple-50">
+            <h3 className="text-lg font-semibold text-slate-800">
               Articles ({filteredArticles.length})
             </h3>
           </div>
@@ -273,40 +273,40 @@ export default function ManageNewsPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-slate-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                       Article
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                       Author
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                       Published
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                       Category
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-slate-200">
                   {filteredArticles.map((article) => (
                     <tr 
                       key={article.id} 
                       onClick={() => handleReviewArticle(article)}
-                      className="hover:bg-gray-50 transition-colors cursor-pointer"
+                      className="hover:bg-slate-50 transition-colors cursor-pointer"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
                             <img
-                              className="h-10 w-10 rounded-lg object-cover"
+                              className="h-10 w-10 rounded-lg object-cover ring-2 ring-blue-200"
                               src={article.imageUrl}
                               alt={article.title}
                               onError={(e) => {
@@ -315,27 +315,27 @@ export default function ManageNewsPage() {
                             />
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-[#323232] max-w-xs truncate">
+                            <div className="text-sm font-medium text-slate-800 max-w-xs truncate">
                               {article.title}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-slate-500">
                               {article.views || 0} views
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
                         {article.journalistName}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
                         {new Date(article.publishedAt).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
                         {article.tags && article.tags.length > 0 ? article.tags[0] : 'No Category'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-3">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(article.status || 'published')}`}>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(article.status || 'published')}`}>
                             {(article.status || 'published').charAt(0).toUpperCase() + (article.status || 'published').slice(1)}
                           </span>
                           <button
@@ -345,7 +345,7 @@ export default function ManageNewsPage() {
                             }}
                             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white ${
                               (article.status || 'published') === 'published' 
-                                ? 'bg-green-500 focus:ring-green-500' 
+                                ? 'bg-emerald-500 focus:ring-emerald-500' 
                                 : 'bg-red-500 focus:ring-red-500'
                             }`}
                           >
@@ -364,7 +364,7 @@ export default function ManageNewsPage() {
                               e.stopPropagation();
                               handleReviewArticle(article);
                             }}
-                            className="text-[#323232] hover:text-gray-600 transition-colors"
+                            className="text-blue-600 hover:text-blue-700 transition-colors"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
@@ -373,7 +373,7 @@ export default function ManageNewsPage() {
                               e.stopPropagation();
                               handleDeleteArticle(article.id!);
                             }}
-                            className="text-red-600 hover:text-red-800 transition-colors"
+                            className="text-red-600 hover:text-red-700 transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -387,19 +387,19 @@ export default function ManageNewsPage() {
           )}
 
           {/* Pagination */}
-          <div className="px-6 py-4 border-t border-gray-200">
+          <div className="px-6 py-4 border-t border-slate-200 bg-slate-50">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-slate-700">
                 Showing 1 to {filteredArticles.length} of {filteredArticles.length} results
               </p>
               <div className="flex space-x-2">
-                <button className="px-3 py-1 border border-[#DCDCDC] rounded text-sm text-[#323232] hover:bg-[#F0F0F0] transition-colors">
+                <button className="px-3 py-1 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-100 transition-colors">
                   Previous
                 </button>
-                <button className="px-3 py-1 bg-gradient-to-r from-[#323232] to-black text-white rounded text-sm hover:from-black hover:to-[#323232] transition-colors">
+                <button className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg text-sm hover:from-blue-600 hover:to-purple-700 transition-colors shadow-md">
                   1
                 </button>
-                <button className="px-3 py-1 border border-[#DCDCDC] rounded text-sm text-[#323232] hover:bg-[#F0F0F0] transition-colors">
+                <button className="px-3 py-1 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-100 transition-colors">
                   Next
                 </button>
               </div>

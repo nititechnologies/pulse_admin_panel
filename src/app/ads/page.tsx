@@ -24,65 +24,65 @@ export default function AdsPage() {
     <Layout title="Ads Management">
       <div className="space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl p-6 shadow-lg text-white">
           <div className="flex items-center space-x-3">
-            <div className="p-3 bg-green-50 rounded-lg">
-              <Megaphone className="w-6 h-6 text-green-600" />
+            <div className="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
+              <Megaphone className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Ads Management</h1>
-              <p className="text-gray-600">Manage your advertising campaigns and promotions</p>
+              <h1 className="text-2xl font-bold text-white">Ads Management</h1>
+              <p className="text-emerald-100">Manage your advertising campaigns and promotions</p>
             </div>
           </div>
         </div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-all">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Active Campaigns</p>
-                <p className="text-2xl font-bold text-gray-900">89</p>
+                <p className="text-sm font-medium text-slate-600">Active Campaigns</p>
+                <p className="text-2xl font-bold text-slate-800 mt-1">89</p>
               </div>
-              <div className="p-3 bg-green-50 rounded-lg">
-                <Megaphone className="w-6 h-6 text-green-600" />
+              <div className="p-3 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-xl">
+                <Megaphone className="w-6 h-6 text-emerald-600" />
               </div>
             </div>
             <div className="mt-4">
-              <span className="text-sm font-medium text-green-600">+23%</span>
-              <span className="text-sm text-gray-500 ml-2">from last month</span>
+              <span className="text-sm font-medium text-emerald-600">+23%</span>
+              <span className="text-sm text-slate-500 ml-2">from last month</span>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-all">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Impressions</p>
-                <p className="text-2xl font-bold text-gray-900">2.4M</p>
+                <p className="text-sm font-medium text-slate-600">Total Impressions</p>
+                <p className="text-2xl font-bold text-slate-800 mt-1">2.4M</p>
               </div>
-              <div className="p-3 bg-blue-50 rounded-lg">
+              <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl">
                 <BarChart3 className="w-6 h-6 text-blue-600" />
               </div>
             </div>
             <div className="mt-4">
-              <span className="text-sm font-medium text-green-600">+18%</span>
-              <span className="text-sm text-gray-500 ml-2">from last month</span>
+              <span className="text-sm font-medium text-emerald-600">+18%</span>
+              <span className="text-sm text-slate-500 ml-2">from last month</span>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-all">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Click-Through Rate</p>
-                <p className="text-2xl font-bold text-gray-900">3.2%</p>
+                <p className="text-sm font-medium text-slate-600">Click-Through Rate</p>
+                <p className="text-2xl font-bold text-slate-800 mt-1">3.2%</p>
               </div>
-              <div className="p-3 bg-purple-50 rounded-lg">
+              <div className="p-3 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl">
                 <BarChart3 className="w-6 h-6 text-purple-600" />
               </div>
             </div>
             <div className="mt-4">
-              <span className="text-sm font-medium text-green-600">+0.5%</span>
-              <span className="text-sm text-gray-500 ml-2">from last month</span>
+              <span className="text-sm font-medium text-emerald-600">+0.5%</span>
+              <span className="text-sm text-slate-500 ml-2">from last month</span>
             </div>
           </div>
         </div>
@@ -95,29 +95,25 @@ export default function AdsPage() {
               <Link
                 key={index}
                 href={section.href}
-                className={`bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 group ${
-                  section.color === 'blue' ? 'hover:border-blue-300' :
-                  section.color === 'green' ? 'hover:border-green-300' :
-                  'hover:border-purple-300'
-                }`}
+                className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-lg transition-all duration-200 group hover:scale-[1.02]"
               >
                 <div className="flex items-center space-x-4">
-                  <div className={`p-3 rounded-lg ${
+                  <div className={`p-3 rounded-xl ${
                     section.color === 'blue' ? 'bg-blue-50 group-hover:bg-blue-100' :
-                    section.color === 'green' ? 'bg-green-50 group-hover:bg-green-100' :
+                    section.color === 'green' ? 'bg-emerald-50 group-hover:bg-emerald-100' :
                     'bg-purple-50 group-hover:bg-purple-100'
-                  }`}>
+                  } transition-colors`}>
                     <Icon className={`w-6 h-6 ${
                       section.color === 'blue' ? 'text-blue-600' :
-                      section.color === 'green' ? 'text-green-600' :
+                      section.color === 'green' ? 'text-emerald-600' :
                       'text-purple-600'
                     }`} />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-gray-700">
+                    <h3 className="text-lg font-semibold text-slate-800 group-hover:text-slate-900">
                       {section.title}
                     </h3>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-slate-600 mt-1">
                       {section.description}
                     </p>
                   </div>
@@ -128,8 +124,8 @@ export default function AdsPage() {
         </div>
 
         {/* Recent Campaigns */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Campaigns</h3>
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+          <h3 className="text-lg font-semibold text-slate-800 mb-4">Recent Campaigns</h3>
           <div className="space-y-4">
             {[
               {
@@ -163,19 +159,19 @@ export default function AdsPage() {
                 spent: '$1,800',
               },
             ].map((campaign, index) => (
-              <Link key={index} href="/ads/manage" className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+              <Link key={index} href="/ads/manage" className="flex items-center justify-between p-4 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-blue-300 transition-all">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-2">
-                    <h4 className="font-medium text-gray-900">{campaign.title}</h4>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                    <h4 className="font-medium text-slate-800">{campaign.title}</h4>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full border ${
                       campaign.status === 'Active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-yellow-100 text-yellow-800'
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-200' 
+                        : 'bg-amber-100 text-amber-800 border-amber-200'
                     }`}>
                       {campaign.status}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-slate-600">
                     <div>
                       <span className="font-medium">Type:</span> {campaign.type}
                     </div>
@@ -191,8 +187,8 @@ export default function AdsPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">${campaign.spent}</p>
-                  <p className="text-xs text-gray-500">of ${campaign.budget}</p>
+                  <p className="text-sm font-medium text-slate-800">${campaign.spent}</p>
+                  <p className="text-xs text-slate-500">of ${campaign.budget}</p>
                 </div>
               </Link>
             ))}

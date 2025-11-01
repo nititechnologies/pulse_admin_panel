@@ -68,17 +68,17 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
   ];
 
   return (
-    <div className={`fixed left-0 top-0 h-full bg-white border-r border-[#DCDCDC] transition-all duration-300 z-50 ${
+    <div className={`fixed left-0 top-0 h-full bg-white border-r border-slate-200 transition-all duration-300 z-50 ${
       isOpen ? 'w-64' : 'w-16'
     }`}>
       {/* Logo */}
-      <div className="flex items-center justify-center h-16 px-4 border-b border-[#DCDCDC]">
+      <div className="flex items-center justify-center h-16 px-4 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-purple-50">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-[#323232] to-black rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-cyan-500 rounded-lg flex items-center justify-center shadow-lg">
             <span className="text-white font-bold text-sm">P</span>
           </div>
           {isOpen && (
-            <span className="text-xl font-bold text-[#323232]">PULSE</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">PULSE</span>
           )}
         </div>
       </div>
@@ -93,14 +93,19 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                              item.id === 'ads' ? expandedAds : 
                              item.id === 'users' ? expandedUsers : false;
 
+            // Check if any submenu item is active
+            const hasActiveSubmenu = hasSubmenu && item.submenu?.some(subItem => isActive(subItem.path));
+            // Parent is only active if path matches AND no submenu item is active
+            const isParentActive = hasSubmenu ? (isActive(item.path) && !hasActiveSubmenu) : isActive(item.path);
+
             return (
               <div key={item.id}>
                 {hasSubmenu ? (
                   <div
                     className={`flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-colors ${
-                      isActive(item.path)
-                        ? 'bg-gradient-to-r from-[#323232] to-black text-white'
-                        : 'text-[#323232] hover:bg-[#F0F0F0]'
+                      isParentActive
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md'
+                        : 'text-slate-700 hover:bg-blue-50 hover:text-blue-600'
                     }`}
                     onClick={() => {
                       if (item.id === 'news') {
@@ -131,8 +136,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                     href={item.path}
                     className={`flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                       isActive(item.path)
-                        ? 'bg-gradient-to-r from-[#323232] to-black text-white'
-                        : 'text-[#323232] hover:bg-[#F0F0F0]'
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md'
+                        : 'text-slate-700 hover:bg-blue-50 hover:text-blue-600'
                     }`}
                   >
                     <div className="flex items-center space-x-3">
@@ -153,8 +158,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                           href={subItem.path}
                           className={`flex items-center space-x-3 px-3 py-2 text-sm rounded-lg transition-colors ${
                             isActive(subItem.path)
-                              ? 'bg-gradient-to-r from-[#323232] to-black text-white'
-                              : 'text-gray-600 hover:bg-[#F0F0F0]'
+                              ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md'
+                              : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
                           }`}
                         >
                           <SubIcon className="w-4 h-4" />
@@ -171,15 +176,15 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       </nav>
 
       {/* User info */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#DCDCDC]">
+      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-200 bg-gradient-to-r from-blue-50 to-purple-50">
         {isOpen && (
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#323232] to-black rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-md">
               <Users className="w-4 h-4 text-white" />
             </div>
             <div>
-              <p className="text-sm font-medium text-[#323232]">Admin User</p>
-              <p className="text-xs text-gray-500">admin@pulse.com</p>
+              <p className="text-sm font-medium text-slate-800">Admin User</p>
+              <p className="text-xs text-slate-500">admin@pulse.com</p>
             </div>
           </div>
         )}

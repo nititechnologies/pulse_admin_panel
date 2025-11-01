@@ -226,35 +226,35 @@ export default function UsersPage() {
     <Layout title="Manage Users">
       <div className="space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-8 shadow-lg text-white">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-              <p className="text-gray-600 mt-2">Manage user accounts and permissions</p>
+              <h1 className="text-3xl font-bold text-white">User Management</h1>
+              <p className="text-blue-100 mt-2">Manage user accounts and permissions</p>
             </div>
             <div className="flex items-center space-x-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-gray-900">{users.length}</div>
-                <div className="text-sm text-gray-500 font-medium">Total Users</div>
+                <div className="text-3xl font-bold text-white">{users.length}</div>
+                <div className="text-sm text-blue-100 font-medium">Total Users</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-green-600">
+                <div className="text-3xl font-bold text-emerald-200">
                   {users.filter(u => u.status === 'active').length}
                 </div>
-                <div className="text-sm text-gray-500 font-medium">Active</div>
+                <div className="text-sm text-blue-100 font-medium">Active</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-red-600">
+                <div className="text-3xl font-bold text-red-200">
                   {users.filter(u => u.status === 'inactive').length}
                 </div>
-                <div className="text-sm text-gray-500 font-medium">Inactive</div>
+                <div className="text-sm text-blue-100 font-medium">Inactive</div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Search and Filter */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
           <div className="flex flex-col lg:flex-row gap-3">
             {/* Search Input */}
             <div className="flex-1 max-w-sm">
@@ -265,7 +265,7 @@ export default function UsersPage() {
                   placeholder="Search users..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-gray-900"
+                  className="w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-slate-900"
                 />
               </div>
             </div>
@@ -275,21 +275,21 @@ export default function UsersPage() {
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm"
                 >
-                  <span className="text-gray-900 truncate">
+                  <span className="text-slate-900 truncate">
                     {filterOptions.find(option => option.value === statusFilter)?.label}
                   </span>
-                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 
                 {isDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50">
                     {filterOptions.map((option) => (
                       <button
                         key={option.value}
                         onClick={() => handleFilterSelect(option.value)}
-                        className="w-full px-3 py-2 text-left text-white hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg flex items-center justify-between text-sm"
+                        className="w-full px-3 py-2 text-left text-white hover:bg-slate-700 first:rounded-t-lg last:rounded-b-lg flex items-center justify-between text-sm"
                       >
                         <span>{option.label}</span>
                         {statusFilter === option.value && (
@@ -304,44 +304,44 @@ export default function UsersPage() {
 
             {/* Join Date Range */}
             <div className="flex gap-2 items-center">
-              <label className="text-xs font-medium text-gray-600 whitespace-nowrap">Join:</label>
+              <label className="text-xs font-medium text-slate-600 whitespace-nowrap">Join:</label>
               <input
                 type="date"
                 value={joinDateFrom}
                 onChange={(e) => setJoinDateFrom(e.target.value)}
-                className="w-32 px-2 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs text-gray-900"
+                className="w-32 px-2 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs text-slate-900"
               />
-              <span className="text-gray-400 text-xs">to</span>
+              <span className="text-slate-400 text-xs">to</span>
               <input
                 type="date"
                 value={joinDateTo}
                 onChange={(e) => setJoinDateTo(e.target.value)}
-                className="w-32 px-2 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs text-gray-900"
+                className="w-32 px-2 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs text-slate-900"
               />
             </div>
 
             {/* Last Active Range */}
             <div className="flex gap-2 items-center">
-              <label className="text-xs font-medium text-gray-600 whitespace-nowrap">Active:</label>
+              <label className="text-xs font-medium text-slate-600 whitespace-nowrap">Active:</label>
               <input
                 type="date"
                 value={lastActiveFrom}
                 onChange={(e) => setLastActiveFrom(e.target.value)}
-                className="w-32 px-2 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs text-gray-900"
+                className="w-32 px-2 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs text-slate-900"
               />
-              <span className="text-gray-400 text-xs">to</span>
+              <span className="text-slate-400 text-xs">to</span>
               <input
                 type="date"
                 value={lastActiveTo}
                 onChange={(e) => setLastActiveTo(e.target.value)}
-                className="w-32 px-2 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs text-gray-900"
+                className="w-32 px-2 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs text-slate-900"
               />
             </div>
 
             {/* Clear Filters Button */}
             <button
               onClick={clearAllFilters}
-              className="px-3 py-2 text-xs text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
+              className="px-3 py-2 text-xs text-slate-600 hover:text-slate-800 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors whitespace-nowrap"
             >
               Clear All
             </button>
@@ -349,42 +349,46 @@ export default function UsersPage() {
         </div>
 
         {/* Users Table */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200">
+          <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-purple-50">
+            <h3 className="text-lg font-semibold text-slate-800">
               Users ({filteredUsers.length})
             </h3>
           </div>
           
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     User
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Contact
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Last Active
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-slate-200">
                 {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                  <tr 
+                    key={user.id} 
+                    onClick={() => handleViewProfile(user)}
+                    className="hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
                           <img
-                            className="h-10 w-10 rounded-full object-cover"
+                            className="h-10 w-10 rounded-full object-cover ring-2 ring-blue-200"
                             src={user.profileImage}
                             alt={user.name}
                             onError={(e) => {
@@ -393,43 +397,46 @@ export default function UsersPage() {
                           />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-slate-800">
                             {user.name}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{user.email}</div>
-                      <div className="text-sm text-gray-500">{user.phone}</div>
+                      <div className="text-sm text-slate-800">{user.email}</div>
+                      <div className="text-sm text-slate-500">{user.phone}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
                       {user.lastActive}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-3">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           user.status === 'active' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-gray-100 text-gray-800'
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' 
+                            : 'bg-slate-100 text-slate-800 border border-slate-200'
                         }`}>
                           {user.status === 'active' ? (
                             <>
-                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5"></div>
+                              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5"></div>
                               Active
                             </>
                           ) : (
                             <>
-                              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-1.5"></div>
+                              <div className="w-1.5 h-1.5 bg-slate-400 rounded-full mr-1.5"></div>
                               Inactive
                             </>
                           )}
                         </span>
                         <button
-                          onClick={() => handleStatusToggle(user.id, user.status)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStatusToggle(user.id, user.status);
+                          }}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white ${
                             user.status === 'active' 
-                              ? 'bg-green-500 focus:ring-green-500' 
+                              ? 'bg-emerald-500 focus:ring-emerald-500' 
                               : 'bg-red-500 focus:ring-red-500'
                           }`}
                         >
@@ -443,8 +450,11 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
-                        onClick={() => handleViewProfile(user)}
-                        className="text-[#5E8BA8] hover:text-[#4A6F8C] transition-colors font-medium"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewProfile(user);
+                        }}
+                        className="text-blue-600 hover:text-blue-700 transition-colors font-medium"
                       >
                         View Profile
                       </button>
@@ -456,19 +466,19 @@ export default function UsersPage() {
           </div>
 
           {/* Pagination */}
-          <div className="px-6 py-4 border-t border-gray-200">
+          <div className="px-6 py-4 border-t border-slate-200 bg-slate-50">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-slate-700">
                 Showing 1 to {filteredUsers.length} of {filteredUsers.length} results
               </p>
               <div className="flex space-x-2">
-                <button className="px-3 py-1 border border-[#DCDCDC] rounded text-sm text-[#323232] hover:bg-[#F0F0F0] transition-colors">
+                <button className="px-3 py-1 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-100 transition-colors">
                   Previous
                 </button>
-                <button className="px-3 py-1 bg-gradient-to-r from-[#323232] to-black text-white rounded text-sm hover:from-black hover:to-[#323232] transition-colors">
+                <button className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg text-sm hover:from-blue-600 hover:to-purple-700 transition-colors shadow-md">
                   1
                 </button>
-                <button className="px-3 py-1 border border-[#DCDCDC] rounded text-sm text-[#323232] hover:bg-[#F0F0F0] transition-colors">
+                <button className="px-3 py-1 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-100 transition-colors">
                   Next
                 </button>
               </div>
@@ -479,13 +489,13 @@ export default function UsersPage() {
         {/* User Details Modal */}
         {showDetailsModal && selectedUser && (
           <div className="fixed inset-0 backdrop-blur-xl flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-50 rounded-2xl max-w-md w-full max-h-[90vh] overflow-hidden shadow-2xl">
+            <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-hidden shadow-2xl border border-slate-200">
               {/* Modal Header */}
-              <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-[#323232]">User Profile</h2>
+              <div className="px-8 py-6 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-purple-50 flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-slate-800">User Profile</h2>
                 <button
                   onClick={closeDetailsModal}
-                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+                  className="p-2 text-slate-400 hover:text-slate-600 transition-colors rounded-lg hover:bg-slate-100"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -498,7 +508,7 @@ export default function UsersPage() {
                 <div className="space-y-8">
                   {/* Profile Section */}
                   <div className="text-center">
-                    <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <div className="w-20 h-20 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full mx-auto mb-4 flex items-center justify-center ring-4 ring-blue-100">
                       <img
                         src={selectedUser.profileImage}
                         alt={selectedUser.name}
@@ -508,42 +518,42 @@ export default function UsersPage() {
                         }}
                       />
                     </div>
-                    <h3 className="text-3xl font-bold text-[#323232] mb-2">{selectedUser.name}</h3>
-                    <div className="space-y-1 text-sm text-gray-600">
+                    <h3 className="text-3xl font-bold text-slate-800 mb-2">{selectedUser.name}</h3>
+                    <div className="space-y-1 text-sm text-slate-600">
                       <div className="flex items-center justify-center space-x-2">
-                        <Mail className="w-4 h-4 text-gray-400" />
+                        <Mail className="w-4 h-4 text-slate-400" />
                         <span>{selectedUser.email}</span>
                       </div>
                       <div className="flex items-center justify-center space-x-2">
-                        <Phone className="w-4 h-4 text-gray-400" />
+                        <Phone className="w-4 h-4 text-slate-400" />
                         <span>{selectedUser.phone}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* User Information */}
-                  <div className="bg-white border border-gray-200 rounded-xl p-6">
-                    <h4 className="text-lg font-semibold text-[#323232] mb-4">User Information</h4>
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-6">
+                    <h4 className="text-lg font-semibold text-slate-800 mb-4">User Information</h4>
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between items-center">
-                        <span className="font-medium text-gray-600">Join Date</span>
-                        <span className="text-gray-900">{selectedUser.joinDate}</span>
+                        <span className="font-medium text-slate-600">Join Date</span>
+                        <span className="text-slate-800">{selectedUser.joinDate}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="font-medium text-gray-600">Last Active</span>
-                        <span className="text-gray-900">{selectedUser.lastActive}</span>
+                        <span className="font-medium text-slate-600">Last Active</span>
+                        <span className="text-slate-800">{selectedUser.lastActive}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <div className="flex items-center space-x-2">
-                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                           </svg>
-                          <span className="font-medium text-gray-600">Status</span>
+                          <span className="font-medium text-slate-600">Status</span>
                         </div>
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                           selectedUser.status === 'active' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-gray-100 text-gray-800'
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' 
+                            : 'bg-slate-100 text-slate-800 border border-slate-200'
                         }`}>
                           {selectedUser.status === 'active' ? 'Active' : 'Inactive'}
                         </span>
@@ -552,17 +562,17 @@ export default function UsersPage() {
                   </div>
 
                   {/* Recent Articles */}
-                  <div className="bg-white border border-gray-200 rounded-xl p-6">
-                    <h4 className="text-lg font-semibold text-[#323232] mb-4">Recent Articles</h4>
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-6">
+                    <h4 className="text-lg font-semibold text-slate-800 mb-4">Recent Articles</h4>
                     <div className="space-y-4">
                       {selectedUser.recentArticles.map((article, index) => (
-                        <div key={index} className="flex items-center space-x-3 py-3 border-b border-gray-100 last:border-b-0">
-                          <TrendingUp className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <div key={index} className="flex items-center space-x-3 py-3 border-b border-slate-100 last:border-b-0">
+                          <TrendingUp className="w-4 h-4 text-blue-500 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-[#323232] text-sm">{article.title}</div>
-                            <div className="text-xs text-gray-500">{article.date}</div>
+                            <div className="font-medium text-slate-800 text-sm">{article.title}</div>
+                            <div className="text-xs text-slate-500">{article.date}</div>
                           </div>
-                          <div className="text-xs text-gray-500 font-medium">
+                          <div className="text-xs text-slate-600 font-medium">
                             {article.views.toLocaleString()} views
                           </div>
                         </div>
@@ -573,20 +583,23 @@ export default function UsersPage() {
               </div>
 
               {/* Modal Footer */}
-              <div className="px-8 py-6 border-t border-gray-100 flex justify-end space-x-3">
+              <div className="px-8 py-6 border-t border-slate-200 bg-slate-50 flex justify-end space-x-3">
                 <button
-                  onClick={() => handleStatusToggle(selectedUser.id, selectedUser.status)}
-                  className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                  onClick={() => {
+                    handleStatusToggle(selectedUser.id, selectedUser.status);
+                    closeDetailsModal();
+                  }}
+                  className={`px-6 py-2 rounded-lg font-medium transition-colors shadow-md ${
                     selectedUser.status === 'active'
-                      ? 'bg-red-600 text-white hover:bg-red-700'
-                      : 'bg-green-600 text-white hover:bg-green-700'
+                      ? 'bg-red-500 text-white hover:bg-red-600'
+                      : 'bg-emerald-500 text-white hover:bg-emerald-600'
                   }`}
                 >
                   {selectedUser.status === 'active' ? 'Deactivate User' : 'Activate User'}
                 </button>
                 <button
                   onClick={closeDetailsModal}
-                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                  className="px-6 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors font-medium"
                 >
                   Close
                 </button>

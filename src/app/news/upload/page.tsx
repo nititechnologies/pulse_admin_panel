@@ -192,22 +192,22 @@ export default function UploadNewsPage() {
     <Layout title="Create Article">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-[#DCDCDC]">
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 shadow-lg text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-br from-[#323232] to-black rounded-xl">
+              <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
                 <Upload className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-[#323232]">Create New Article</h1>
-                <p className="text-gray-500 text-sm">Publish professional news content</p>
+                <h1 className="text-2xl font-bold text-white">Create New Article</h1>
+                <p className="text-blue-100 text-sm">Publish professional news content</p>
               </div>
             </div>
             <div className="flex space-x-3">
               <button 
                 type="button"
                 onClick={handleImagePreview}
-                className="px-6 py-2 border border-[#DCDCDC] rounded-lg text-gray-600 hover:bg-[#F0F0F0] transition-colors font-medium flex items-center"
+                className="px-6 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg text-white hover:bg-white/30 transition-colors font-medium flex items-center"
               >
                 <Image className="w-4 h-4 mr-2" />
                 {showImagePreview ? 'Hide Preview' : 'Show Preview'}
@@ -216,7 +216,7 @@ export default function UploadNewsPage() {
                 type="submit"
                 form="article-form"
                 disabled={isSubmitting}
-                className="px-6 py-2 bg-gradient-to-r from-[#323232] to-black text-white rounded-lg hover:from-black hover:to-[#323232] transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
               >
                 {isSubmitting ? (
                   <>
@@ -235,11 +235,11 @@ export default function UploadNewsPage() {
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-xl p-8 shadow-sm border border-[#DCDCDC]">
+        <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200">
           <form id="article-form" onSubmit={handleSubmit} className="space-y-8">
             {/* Title */}
             <div className="space-y-2">
-              <label htmlFor="title" className="block text-sm font-semibold text-[#323232]">
+              <label htmlFor="title" className="block text-sm font-semibold text-slate-800">
                 Article Title *
               </label>
               <input
@@ -248,7 +248,7 @@ export default function UploadNewsPage() {
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-[#DCDCDC] rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-colors text-lg font-medium text-[#323232] bg-[#F0F0F0]"
+                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-lg font-medium text-slate-800 bg-white"
                 placeholder="Enter compelling article title..."
                 required
               />
@@ -256,7 +256,7 @@ export default function UploadNewsPage() {
 
             {/* Summary */}
             <div className="space-y-2">
-              <label htmlFor="summary" className="block text-sm font-semibold text-[#323232]">
+              <label htmlFor="summary" className="block text-sm font-semibold text-slate-800">
                 Article Summary *
               </label>
               <textarea
@@ -265,7 +265,7 @@ export default function UploadNewsPage() {
                 value={formData.summary}
                 onChange={handleInputChange}
                 rows={4}
-                className="w-full px-4 py-3 border border-[#DCDCDC] rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-colors resize-none text-[#323232] bg-[#F0F0F0]"
+                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none text-slate-800 bg-white"
                 placeholder="Write a compelling summary that captures the essence of your article..."
                 required
               />
@@ -273,7 +273,7 @@ export default function UploadNewsPage() {
 
             {/* Article Content */}
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-900">
+              <label className="block text-sm font-semibold text-slate-800">
                 Article Content *
               </label>
               <RichTextEditor
@@ -287,8 +287,8 @@ export default function UploadNewsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Journalist Name */}
               <div className="space-y-2">
-                <label htmlFor="journalistName" className="block text-sm font-semibold text-gray-900">
-                  <User className="w-4 h-4 inline mr-2" />
+                <label htmlFor="journalistName" className="block text-sm font-semibold text-slate-800">
+                  <User className="w-4 h-4 inline mr-2 text-blue-600" />
                   Journalist Name *
                 </label>
                 <input
@@ -297,7 +297,7 @@ export default function UploadNewsPage() {
                   name="journalistName"
                   value={formData.journalistName}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-slate-800 bg-white"
                   placeholder="Dr. Sarah Chen"
                   required
                 />
@@ -306,30 +306,30 @@ export default function UploadNewsPage() {
 
               {/* Region */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-900">
-                  <Globe className="w-4 h-4 inline mr-2" />
+                <label className="block text-sm font-semibold text-slate-800">
+                  <Globe className="w-4 h-4 inline mr-2 text-blue-600" />
                   Region *
                 </label>
                 <div className="relative" ref={regionDropdownRef}>
                   <button
                     type="button"
                     onClick={() => setIsRegionDropdownOpen(!isRegionDropdownOpen)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between"
                   >
-                    <span className="text-gray-900">
+                    <span className="text-slate-800">
                       {formData.region || 'Select region...'}
                     </span>
-                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isRegionDropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isRegionDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   
                   {isRegionDropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50">
                       {regionOptions.map((region) => (
                         <button
                           key={region}
                           type="button"
                           onClick={() => handleRegionSelect(region)}
-                          className="w-full px-4 py-3 text-left text-white hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg flex items-center justify-between"
+                          className="w-full px-4 py-3 text-left text-white hover:bg-slate-700 first:rounded-t-lg last:rounded-b-lg flex items-center justify-between"
                         >
                           <span>{region}</span>
                           {formData.region === region && (
@@ -345,8 +345,8 @@ export default function UploadNewsPage() {
 
             {/* Image URL */}
             <div className="space-y-2">
-              <label htmlFor="imageUrl" className="block text-sm font-semibold text-gray-900">
-                <Image className="w-4 h-4 inline mr-2" />
+              <label htmlFor="imageUrl" className="block text-sm font-semibold text-slate-800">
+                <Image className="w-4 h-4 inline mr-2 text-blue-600" />
                 Featured Image URL *
               </label>
               <input
@@ -355,7 +355,7 @@ export default function UploadNewsPage() {
                 name="imageUrl"
                 value={formData.imageUrl}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-slate-800 bg-white"
                 placeholder="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop"
                 required
               />
@@ -447,16 +447,16 @@ export default function UploadNewsPage() {
 
             {/* Categories */}
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-900">
-                <Tag className="w-4 h-4 inline mr-2" />
+              <label className="block text-sm font-semibold text-slate-800">
+                <Tag className="w-4 h-4 inline mr-2 text-blue-600" />
                 Category *
               </label>
-              <p className="text-sm text-gray-500">Select categories from the suggestions below</p>
+              <p className="text-sm text-slate-600">Select categories from the suggestions below</p>
               
               {/* Suggested Categories */}
               <div className="space-y-3">
                 <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Suggested Categories:</h4>
+                  <h4 className="text-sm font-medium text-slate-700 mb-2">Suggested Categories:</h4>
                   <div className="flex flex-wrap gap-2">
                     {suggestedTags.map((tag) => (
                       <button
@@ -464,10 +464,10 @@ export default function UploadNewsPage() {
                         type="button"
                         onClick={() => addSuggestedTag(tag)}
                         disabled={formData.tags.includes(tag)}
-                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors border ${
                           formData.tags.includes(tag)
-                            ? 'bg-blue-100 text-blue-800 cursor-not-allowed'
-                            : 'bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-800'
+                            ? 'bg-blue-100 text-blue-800 border-blue-200 cursor-not-allowed'
+                            : 'bg-slate-100 text-slate-700 hover:bg-blue-100 hover:text-blue-800 border-slate-200'
                         }`}
                       >
                         {formData.tags.includes(tag) ? '✓ ' : ''}{tag}
@@ -481,12 +481,12 @@ export default function UploadNewsPage() {
               {/* Selected Categories */}
               {formData.tags.length > 0 && (
                 <div className="mt-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Selected Categories ({formData.tags.length}):</h4>
+                  <h4 className="text-sm font-medium text-slate-700 mb-2">Selected Categories ({formData.tags.length}):</h4>
                   <div className="flex flex-wrap gap-2">
                     {formData.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                        className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium border border-blue-200"
                       >
                         {tag}
                         <button
@@ -507,12 +507,12 @@ export default function UploadNewsPage() {
 
         {/* Preview */}
         {(formData.title || formData.imageUrl) && (
-          <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
-            <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+          <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200">
+            <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center">
               <Eye className="w-5 h-5 mr-2 text-blue-600" />
               Article Preview
             </h3>
-            <div className="border border-gray-200 rounded-xl overflow-hidden">
+            <div className="border border-slate-200 rounded-xl overflow-hidden">
               {/* Article Header */}
               <div className="p-6 border-b border-gray-100">
                 <div className="flex items-start justify-between mb-4">

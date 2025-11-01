@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Layout from '@/components/Layout';
-import { Search, Trash2, Eye, Play, Pause } from 'lucide-react';
+import { Search, Trash2, Eye, Play, Pause, ChevronDown, Check } from 'lucide-react';
 
 interface Campaign {
   id: number;
@@ -25,6 +25,53 @@ export default function ManageAdsPage() {
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const typeDropdownRef = useRef<HTMLDivElement>(null);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
+
+  const typeOptions = [
+    { value: 'all', label: 'All Types' },
+    { value: 'banner', label: 'Banner Ad' },
+    { value: 'video', label: 'Video Ad' },
+    { value: 'display', label: 'Display Ad' },
+    { value: 'native', label: 'Native Ad' },
+    { value: 'social', label: 'Social Media Ad' },
+  ];
+
+  const statusOptions = [
+    { value: 'all', label: 'All Status' },
+    { value: 'active', label: 'Active' },
+    { value: 'removed', label: 'Removed' },
+    { value: 'scheduled', label: 'Scheduled' },
+  ];
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (typeDropdownRef.current && !typeDropdownRef.current.contains(event.target as Node)) {
+        setIsTypeDropdownOpen(false);
+      }
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) {
+        setIsStatusDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleTypeSelect = (value: string) => {
+    setSelectedType(value);
+    setIsTypeDropdownOpen(false);
+  };
+
+  const handleStatusSelect = (value: string) => {
+    setSelectedStatus(value);
+    setIsStatusDropdownOpen(false);
+  };
 
   const [campaigns, setCampaigns] = useState<Campaign[]>([
     {
@@ -87,7 +134,7 @@ export default function ManageAdsPage() {
 
   const filteredCampaigns = campaigns.filter(campaign => {
     const matchesSearch = campaign.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = selectedType === 'all' || campaign.type.toLowerCase() === selectedType;
+    const matchesType = selectedType === 'all' || campaign.type.toLowerCase() === selectedType.toLowerCase();
     const matchesStatus = selectedStatus === 'all' || campaign.status === selectedStatus;
     
     return matchesSearch && matchesType && matchesStatus;
@@ -96,17 +143,17 @@ export default function ManageAdsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-100 text-green-800';
+        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
       case 'removed':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 border-red-200';
       case 'paused':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-amber-100 text-amber-800 border-amber-200';
       case 'draft':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-slate-100 text-slate-800 border-slate-200';
       case 'scheduled':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 border-blue-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-slate-100 text-slate-800 border-slate-200';
     }
   };
 
@@ -147,15 +194,15 @@ export default function ManageAdsPage() {
     <Layout title="Manage Ads">
       <div className="space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DCDCDC]">
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 shadow-lg text-white">
           <div>
-            <h1 className="text-2xl font-bold text-[#323232]">Manage Ad Campaigns</h1>
-            <p className="text-gray-600">Edit, pause, and organize your advertising campaigns</p>
+            <h1 className="text-2xl font-bold text-white">Manage Ad Campaigns</h1>
+            <p className="text-blue-100">Edit, pause, and organize your advertising campaigns</p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-[#DCDCDC]">
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div className="md:col-span-2">
@@ -166,113 +213,149 @@ export default function ManageAdsPage() {
                   placeholder="Search campaigns..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800"
                 />
               </div>
             </div>
 
             {/* Type Filter */}
             <div>
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">All Types</option>
-                <option value="banner">Banner Ad</option>
-                <option value="video">Video Ad</option>
-                <option value="display">Display Ad</option>
-                <option value="native">Native Ad</option>
-                <option value="social">Social Media Ad</option>
-              </select>
+              <div className="relative" ref={typeDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm"
+                >
+                  <span className="text-slate-900 truncate">
+                    {typeOptions.find(option => option.value === selectedType)?.label || 'All Types'}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isTypeDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {isTypeDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50">
+                    {typeOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => handleTypeSelect(option.value)}
+                        className="w-full px-3 py-2 text-left text-white hover:bg-slate-700 first:rounded-t-lg last:rounded-b-lg flex items-center justify-between text-sm"
+                      >
+                        <span>{option.label}</span>
+                        {selectedType === option.value && (
+                          <Check className="w-3 h-3 text-white" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Status Filter */}
             <div>
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="removed">Removed</option>
-                <option value="scheduled">Scheduled</option>
-              </select>
+              <div className="relative" ref={statusDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm"
+                >
+                  <span className="text-slate-900 truncate">
+                    {statusOptions.find(option => option.value === selectedStatus)?.label || 'All Status'}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {isStatusDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50">
+                    {statusOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => handleStatusSelect(option.value)}
+                        className="w-full px-3 py-2 text-left text-white hover:bg-slate-700 first:rounded-t-lg last:rounded-b-lg flex items-center justify-between text-sm"
+                      >
+                        <span>{option.label}</span>
+                        {selectedStatus === option.value && (
+                          <Check className="w-3 h-3 text-white" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Campaigns List */}
-        <div className="bg-white rounded-lg shadow-sm border border-[#DCDCDC]">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-[#323232]">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200">
+          <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-purple-50">
+            <h3 className="text-lg font-semibold text-slate-800">
               Campaigns ({filteredCampaigns.length})
             </h3>
           </div>
           
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Campaign
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Type
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Impressions
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     CTR
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-slate-200">
                   {filteredCampaigns.map((campaign) => (
                     <tr 
                       key={campaign.id} 
                       onClick={() => handleViewCampaign(campaign)}
-                      className="hover:bg-gray-50 transition-colors cursor-pointer"
+                      className="hover:bg-slate-50 transition-colors cursor-pointer"
                     >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
                           <img
-                            className="h-10 w-10 rounded-lg object-cover"
+                            className="h-10 w-10 rounded-lg object-cover ring-2 ring-blue-200"
                             src={campaign.imageUrl}
                             alt={campaign.title}
                           />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-[#323232] max-w-xs truncate">
+                          <div className="text-sm font-medium text-slate-800 max-w-xs truncate">
                             {campaign.title}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-slate-500">
                             ${campaign.spent.toLocaleString()} / ${campaign.budget.toLocaleString()}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
                       {campaign.type}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
                       {campaign.impressions.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
                       {campaign.ctr}%
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-3">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium flex items-center space-x-1 ${getStatusColor(campaign.status)}`}>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(campaign.status)}`}>
                           {getStatusIcon(campaign.status)}
                           <span>{campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}</span>
                         </span>
@@ -283,7 +366,7 @@ export default function ManageAdsPage() {
                           }}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white ${
                             campaign.status === 'active' 
-                              ? 'bg-green-500 focus:ring-green-500' 
+                              ? 'bg-emerald-500 focus:ring-emerald-500' 
                               : 'bg-red-500 focus:ring-red-500'
                           }`}
                         >
@@ -302,7 +385,7 @@ export default function ManageAdsPage() {
                               e.stopPropagation();
                               handleViewCampaign(campaign);
                             }}
-                            className="text-[#323232] hover:text-gray-600 transition-colors"
+                            className="text-blue-600 hover:text-blue-700 transition-colors"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
@@ -311,7 +394,7 @@ export default function ManageAdsPage() {
                               e.stopPropagation();
                               // Handle delete action
                             }}
-                            className="text-red-600 hover:text-red-800 transition-colors"
+                            className="text-red-600 hover:text-red-700 transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -324,19 +407,19 @@ export default function ManageAdsPage() {
           </div>
 
           {/* Pagination */}
-          <div className="px-6 py-4 border-t border-gray-200">
+          <div className="px-6 py-4 border-t border-slate-200 bg-slate-50">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-slate-700">
                 Showing 1 to {filteredCampaigns.length} of {filteredCampaigns.length} results
               </p>
               <div className="flex space-x-2">
-                <button className="px-3 py-1 border border-[#DCDCDC] rounded text-sm text-[#323232] hover:bg-[#F0F0F0] transition-colors">
+                <button className="px-3 py-1 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-100 transition-colors">
                   Previous
                 </button>
-                <button className="px-3 py-1 bg-gradient-to-r from-[#323232] to-black text-white rounded text-sm hover:from-black hover:to-[#323232] transition-colors">
+                <button className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg text-sm hover:from-blue-600 hover:to-purple-700 transition-colors shadow-md">
                   1
                 </button>
-                <button className="px-3 py-1 border border-[#DCDCDC] rounded text-sm text-[#323232] hover:bg-[#F0F0F0] transition-colors">
+                <button className="px-3 py-1 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-100 transition-colors">
                   Next
                 </button>
               </div>

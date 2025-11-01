@@ -17,7 +17,7 @@ export default function Layout({ children, title }: LayoutProps) {
   };
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="flex h-screen bg-slate-50">
       <Sidebar isOpen={sidebarOpen} onToggle={toggleSidebar} />
       
       <div className={`flex-1 flex flex-col transition-all duration-300 ${
@@ -25,7 +25,7 @@ export default function Layout({ children, title }: LayoutProps) {
       }`}>
         <Header onToggleSidebar={toggleSidebar} title={title} />
         
-        <main className="flex-1 overflow-auto p-6 bg-white">
+        <main className="flex-1 overflow-auto p-6 bg-slate-50">
           {children}
         </main>
       </div>
