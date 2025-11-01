@@ -60,7 +60,7 @@ export default function AuthPage() {
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#E6EBF0] to-[#F0F0F0] relative overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center p-8">
           <img 
-            src="/image%20copy.png" 
+            src="/login.png" 
             alt="Welcome" 
             className="max-w-full max-h-full object-contain"
           />
