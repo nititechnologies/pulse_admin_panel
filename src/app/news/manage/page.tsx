@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Layout from '@/components/Layout';
 import { getArticles, deleteArticle, Article } from '@/lib/articles';
-import { Search, Trash2, Eye, Calendar, User, Tag, ChevronDown, Check } from 'lucide-react';
+import { Search, Trash2, Eye, Calendar, User, Tag, ChevronDown, Check, FileText, Globe, X } from 'lucide-react';
 
 export default function ManageNewsPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -144,153 +144,183 @@ export default function ManageNewsPage() {
 
   return (
     <Layout title="Manage News">
-      <div className="space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6 pb-8">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 shadow-lg text-white">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Manage News Articles</h1>
-            <p className="text-blue-100">Edit, delete, and organize your articles</p>
+        <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-xl p-5 shadow-lg text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px] opacity-40"></div>
+          <div className="relative z-10">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-white/20 backdrop-blur-md rounded-lg shadow-md border border-white/30">
+                <FileText className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Manage News Articles</h1>
+                <p className="text-blue-100 text-xs">Edit, delete, and organize your articles</p>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Search */}
-            <div className="md:col-span-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search articles..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800"
-                />
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+          <div className="p-6 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-white">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Search className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-800">Filters</h2>
+                <p className="text-xs text-slate-500">Search and filter your articles</p>
               </div>
             </div>
-
-            {/* Category Filter */}
-            <div>
-              <div className="relative" ref={categoryDropdownRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm"
-                >
-                  <span className="text-slate-800">
-                    {selectedCategory === 'all' ? 'All Categories' : selectedCategory}
-                  </span>
-                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
-                
-                {isCategoryDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50">
-                    <button
-                      key="all"
-                      onClick={() => { setSelectedCategory('all'); setIsCategoryDropdownOpen(false); }}
-                      className="w-full px-3 py-2 text-left text-white hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg flex items-center justify-between text-sm"
-                    >
-                      <span>All Categories</span>
-                      {selectedCategory === 'all' && <Check className="w-3 h-3 text-white" />}
-                    </button>
-                    {categoryOptions.filter(opt => opt !== 'all').map((category) => (
-                      <button
-                        key={category}
-                        onClick={() => { setSelectedCategory(category); setIsCategoryDropdownOpen(false); }}
-                        className="w-full px-3 py-2 text-left text-white hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg flex items-center justify-between text-sm"
-                      >
-                        <span>{category}</span>
-                        {selectedCategory === category && <Check className="w-3 h-3 text-white" />}
-                      </button>
-                    ))}
-                  </div>
-                )}
+          </div>
+          
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Search */}
+              <div className="md:col-span-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search articles..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-slate-800 bg-white"
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Status Filter */}
-            <div>
-              <div className="relative" ref={statusDropdownRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm"
-                >
-                  <span className="text-slate-800">
-                    {statusOptions.find(opt => opt.value === selectedStatus)?.label || 'All Status'}
-                  </span>
-                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
-                
-                {isStatusDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50">
-                    {statusOptions.map((option) => (
+              {/* Category Filter */}
+              <div>
+                <div className="relative" ref={categoryDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm transition-all duration-200"
+                  >
+                    <span className="text-slate-800">
+                      {selectedCategory === 'all' ? 'All Categories' : selectedCategory}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {isCategoryDropdownOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
                       <button
-                        key={option.value}
-                        onClick={() => { setSelectedStatus(option.value); setIsStatusDropdownOpen(false); }}
-                        className="w-full px-3 py-2 text-left text-white hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg flex items-center justify-between text-sm"
+                        key="all"
+                        onClick={() => { setSelectedCategory('all'); setIsCategoryDropdownOpen(false); }}
+                        className="w-full px-4 py-3 text-left text-slate-800 hover:bg-blue-50 transition-colors flex items-center justify-between border-b border-slate-100"
                       >
-                        <span>{option.label}</span>
-                        {selectedStatus === option.value && <Check className="w-3 h-3 text-white" />}
+                        <span>All Categories</span>
+                        {selectedCategory === 'all' && <Check className="w-4 h-4 text-blue-600" />}
                       </button>
-                    ))}
-                  </div>
-                )}
+                      {categoryOptions.filter(opt => opt !== 'all').map((category) => (
+                        <button
+                          key={category}
+                          onClick={() => { setSelectedCategory(category); setIsCategoryDropdownOpen(false); }}
+                          className="w-full px-4 py-3 text-left text-slate-800 hover:bg-blue-50 transition-colors flex items-center justify-between border-b border-slate-100 last:border-b-0"
+                        >
+                          <span>{category}</span>
+                          {selectedCategory === category && <Check className="w-4 h-4 text-blue-600" />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Status Filter */}
+              <div>
+                <div className="relative" ref={statusDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm transition-all duration-200"
+                  >
+                    <span className="text-slate-800">
+                      {statusOptions.find(opt => opt.value === selectedStatus)?.label || 'All Status'}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {isStatusDropdownOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
+                      {statusOptions.map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => { setSelectedStatus(option.value); setIsStatusDropdownOpen(false); }}
+                          className="w-full px-4 py-3 text-left text-slate-800 hover:bg-blue-50 transition-colors flex items-center justify-between border-b border-slate-100 last:border-b-0"
+                        >
+                          <span>{option.label}</span>
+                          {selectedStatus === option.value && <Check className="w-4 h-4 text-blue-600" />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Articles List */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200">
-          <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-purple-50">
-            <h3 className="text-lg font-semibold text-slate-800">
-              Articles ({filteredArticles.length})
-            </h3>
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+          <div className="p-6 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-white">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <FileText className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-800">Articles</h2>
+                <p className="text-xs text-slate-500">
+                  {filteredArticles.length} {filteredArticles.length === 1 ? 'article' : 'articles'} found
+                </p>
+              </div>
+            </div>
           </div>
           
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading articles...</p>
+              <p className="text-sm text-slate-600">Loading articles...</p>
             </div>
           ) : error ? (
             <div className="text-center py-12">
-              <p className="text-red-600 mb-4">{error}</p>
+              <p className="text-sm text-red-600 mb-4">{error}</p>
               <button 
                 onClick={fetchArticles}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-md"
               >
                 Try Again
               </button>
             </div>
           ) : filteredArticles.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-600 mb-4">No articles found</p>
-              <p className="text-sm text-gray-500">Create your first article to get started</p>
+              <p className="text-sm text-slate-600 mb-2">No articles found</p>
+              <p className="text-xs text-slate-500">Create your first article to get started</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-slate-50">
+                <thead className="bg-gradient-to-br from-slate-50 to-white border-b border-slate-200">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                       Article
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                       Author
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                       Published
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                       Category
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -300,38 +330,44 @@ export default function ManageNewsPage() {
                     <tr 
                       key={article.id} 
                       onClick={() => handleReviewArticle(article)}
-                      className="hover:bg-slate-50 transition-colors cursor-pointer"
+                      className="hover:bg-blue-50/50 transition-colors cursor-pointer"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10">
+                          <div className="flex-shrink-0 h-12 w-12">
                             <img
-                              className="h-10 w-10 rounded-lg object-cover ring-2 ring-blue-200"
+                              className="h-12 w-12 rounded-xl object-cover ring-2 ring-blue-100 shadow-sm"
                               src={article.imageUrl}
                               alt={article.title}
                               onError={(e) => {
-                                e.currentTarget.src = 'https://via.placeholder.com/40x40?text=No+Image';
+                                e.currentTarget.src = 'https://via.placeholder.com/48x48?text=No+Image';
                               }}
                             />
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-slate-800 max-w-xs truncate">
+                            <div className="text-sm font-semibold text-slate-800 max-w-xs truncate">
                               {article.title}
                             </div>
-                            <div className="text-sm text-slate-500">
+                            <div className="text-xs text-slate-500 mt-0.5">
                               {article.views || 0} views
                             </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
-                        {article.journalistName}
+                        {article.journalistName || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
                         {new Date(article.publishedAt).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
-                        {article.tags && article.tags.length > 0 ? article.tags[0] : 'No Category'}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {article.tags && article.tags.length > 0 ? (
+                          <span className="inline-flex items-center px-2.5 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-medium">
+                            {article.tags[0]}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-slate-400">No Category</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-3">
@@ -364,7 +400,8 @@ export default function ManageNewsPage() {
                               e.stopPropagation();
                               handleReviewArticle(article);
                             }}
-                            className="text-blue-600 hover:text-blue-700 transition-colors"
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="View Article"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
@@ -373,7 +410,8 @@ export default function ManageNewsPage() {
                               e.stopPropagation();
                               handleDeleteArticle(article.id!);
                             }}
-                            className="text-red-600 hover:text-red-700 transition-colors"
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete Article"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -387,19 +425,19 @@ export default function ManageNewsPage() {
           )}
 
           {/* Pagination */}
-          <div className="px-6 py-4 border-t border-slate-200 bg-slate-50">
+          <div className="px-6 py-4 border-t border-slate-200 bg-gradient-to-br from-slate-50 to-white">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-slate-700">
+              <p className="text-xs text-slate-600">
                 Showing 1 to {filteredArticles.length} of {filteredArticles.length} results
               </p>
               <div className="flex space-x-2">
-                <button className="px-3 py-1 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-100 transition-colors">
+                <button className="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-white transition-colors font-medium">
                   Previous
                 </button>
-                <button className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg text-sm hover:from-blue-600 hover:to-purple-700 transition-colors shadow-md">
+                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors shadow-md font-medium">
                   1
                 </button>
-                <button className="px-3 py-1 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-100 transition-colors">
+                <button className="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-white transition-colors font-medium">
                   Next
                 </button>
               </div>
@@ -409,107 +447,114 @@ export default function ManageNewsPage() {
 
         {/* Review Modal */}
         {showReviewModal && selectedArticle && (
-          <div className="fixed inset-0 backdrop-blur-xl flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-50 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+          <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
               {/* Modal Header */}
-              <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-[#323232]">Article Review</h2>
+              <div className="p-6 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-white flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Eye className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-800">Article Review</h2>
+                    <p className="text-xs text-slate-500">Review article details</p>
+                  </div>
+                </div>
                 <button
                   onClick={closeReviewModal}
-                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Modal Content */}
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <div className="p-8 overflow-y-auto max-h-[calc(90vh-160px)]">
                 <div className="space-y-6">
                   {/* Article Header */}
-                  <div className="border border-[#DCDCDC] rounded-xl overflow-hidden bg-white">
-                    <div className="p-6 border-b border-gray-100">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <h3 className="text-2xl font-bold text-[#323232] mb-3 leading-tight">
-                            {selectedArticle.title}
-                          </h3>
-                          {selectedArticle.summary && (
-                            <p className="text-gray-600 text-lg leading-relaxed">{selectedArticle.summary}</p>
-                          )}
-                        </div>
-                        {selectedArticle.imageUrl && (
-                          <div className="ml-6 flex-shrink-0">
-                            <img
-                              src={selectedArticle.imageUrl}
-                              alt="Article preview"
-                              className="w-40 h-32 object-cover rounded-lg shadow-sm"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                              }}
-                            />
-                          </div>
+                  <div className="border border-slate-200 rounded-xl overflow-hidden bg-gradient-to-br from-slate-50 to-white">
+                    {/* Featured Image */}
+                    {selectedArticle.imageUrl && (
+                      <div className="w-full h-64 bg-slate-200 overflow-hidden">
+                        <img
+                          src={selectedArticle.imageUrl}
+                          alt="Article preview"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="p-6">
+                      <div className="mb-6">
+                        <h3 className="text-2xl font-bold text-slate-900 mb-4 leading-tight">
+                          {selectedArticle.title}
+                        </h3>
+                        {selectedArticle.summary && (
+                          <p className="text-gray-600 text-base leading-relaxed mb-6">{selectedArticle.summary}</p>
                         )}
+                        
+                        {/* Article Meta */}
+                        <div className="flex flex-wrap items-center gap-5 text-sm text-gray-600 pt-4 border-t border-gray-200">
+                          {selectedArticle.journalistName && (
+                            <span className="flex items-center font-medium">
+                              <User className="w-4 h-4 mr-2 text-blue-600" />
+                              {selectedArticle.journalistName}
+                            </span>
+                          )}
+                          <span className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-2 text-blue-600" />
+                            {new Date(selectedArticle.publishedAt).toLocaleDateString('en-US', { 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric' 
+                            })}
+                          </span>
+                          {selectedArticle.region && (
+                            <span className="flex items-center">
+                              <Globe className="w-4 h-4 mr-2 text-blue-600" />
+                              {selectedArticle.region}
+                            </span>
+                          )}
+                          <span className="text-slate-500">{selectedArticle.views || 0} views</span>
+                        </div>
                       </div>
                       
-                      {/* Article Meta */}
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                        {selectedArticle.journalistName && (
-                          <span className="flex items-center">
-                            <User className="w-4 h-4 mr-1" />
-                            {selectedArticle.journalistName}
-                          </span>
-                        )}
-                        <span className="flex items-center">
-                          <Calendar className="w-4 h-4 mr-1" />
-                          {new Date(selectedArticle.publishedAt).toLocaleDateString()}
-                        </span>
-                        {selectedArticle.region && (
-                          <span className="flex items-center">
-                            <Tag className="w-4 h-4 mr-1" />
-                            {selectedArticle.region}
-                          </span>
-                        )}
-                        <span>{selectedArticle.views || 0} views</span>
-                      </div>
-                    </div>
-                    
-                    {/* Tags */}
-                    {selectedArticle.tags && selectedArticle.tags.length > 0 && (
-                      <div className="p-6 bg-gray-50">
-                        <div className="flex flex-wrap gap-2">
+                      {/* Tags */}
+                      {selectedArticle.tags && selectedArticle.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-6">
                           {selectedArticle.tags.map((tag, index) => (
                             <span
                               key={index}
-                              className="px-3 py-1 bg-white text-gray-700 rounded-full text-sm font-medium border border-[#DCDCDC]"
+                              className="px-4 py-1.5 bg-blue-100 text-blue-800 rounded-lg text-sm font-medium border border-blue-200"
                             >
                               #{tag}
                             </span>
                           ))}
                         </div>
-                      </div>
-                    )}
-                    
-                    {/* Article Content */}
-                    {selectedArticle.content && (
-                      <div className="p-6 border-t border-gray-100">
-                        <h4 className="text-lg font-semibold text-[#323232] mb-4">Article Content</h4>
-                        <div 
-                          className="prose prose-sm max-w-none"
-                          dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
-                        />
-                      </div>
-                    )}
+                      )}
+                      
+                      {/* Article Content */}
+                      {selectedArticle.content && (
+                        <div className="pt-6 border-t border-gray-200">
+                          <div 
+                            className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 prose-strong:text-gray-900"
+                            dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Modal Footer */}
-              <div className="p-6 border-t border-gray-200 flex justify-end space-x-3">
+              <div className="p-6 border-t border-slate-200 bg-gradient-to-br from-slate-50 to-white flex justify-end space-x-3">
                 <button
                   onClick={closeReviewModal}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="px-5 py-2 border border-slate-200 rounded-lg text-slate-700 hover:bg-white transition-colors text-sm font-medium shadow-sm"
                 >
                   Close
                 </button>
