@@ -13,7 +13,8 @@ import {
   Settings,
   Plus,
   Users,
-  UserCheck
+  UserCheck,
+  Tag
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -26,6 +27,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const [expandedNews, setExpandedNews] = useState(true);
   const [expandedAds, setExpandedAds] = useState(true);
   const [expandedUsers, setExpandedUsers] = useState(true);
+  const [expandedRegionsTags, setExpandedRegionsTags] = useState(false);
 
   const isActive = (path: string) => pathname === path;
 
@@ -65,6 +67,12 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         { label: 'All Users', path: '/users', icon: Users },
       ],
     },
+    {
+      id: 'regions-tags',
+      label: 'Regions & Tags',
+      icon: Tag,
+      path: '/regions-tags',
+    },
   ];
 
   return (
@@ -91,7 +99,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
             const hasSubmenu = item.submenu && item.submenu.length > 0;
             const isExpanded = item.id === 'news' ? expandedNews : 
                              item.id === 'ads' ? expandedAds : 
-                             item.id === 'users' ? expandedUsers : false;
+                             item.id === 'users' ? expandedUsers :
+                             item.id === 'regions-tags' ? expandedRegionsTags : false;
 
             // Check if any submenu item is active
             const hasActiveSubmenu = hasSubmenu && item.submenu?.some(subItem => isActive(subItem.path));
@@ -114,6 +123,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                         setExpandedAds(!expandedAds);
                       } else if (item.id === 'users') {
                         setExpandedUsers(!expandedUsers);
+                      } else if (item.id === 'regions-tags') {
+                        setExpandedRegionsTags(!expandedRegionsTags);
                       }
                     }}
                   >

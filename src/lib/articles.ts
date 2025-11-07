@@ -18,16 +18,18 @@ export interface Article {
   summary: string;
   content: string;
   journalistName: string;
-  category: string;
-  region: string;
-  source: string;
+  category?: string; // Optional, kept for backward compatibility
+  region?: string; // Optional, kept for backward compatibility
+  regions?: string[]; // New field for multiple regions
+  source?: string; // Optional
   imageUrl: string;
-  readTime: number;
+  readTime?: number; // Optional
   tags: string[];
   publishedAt: string;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
-  status?: 'draft' | 'published' | 'archived' | 'removed';
+  status?: 'draft' | 'published' | 'archived' | 'removed' | 'scheduled';
+  scheduledAt?: Timestamp;
   views?: number;
   likes?: number;
 }
@@ -39,16 +41,27 @@ export const addArticle = async (articleData: Omit<Article, 'id' | 'createdAt' |
     console.log('Article data:', articleData);
     console.log('Firebase db object:', db);
     
+    // Determine status based on scheduledAt
+    // If scheduledAt exists and is in the future, set status to 'scheduled'
+    // Otherwise, set to 'published'
+    const isScheduled = articleData.scheduledAt && articleData.scheduledAt.toMillis() > Date.now();
+    const status = isScheduled ? 'scheduled' : 'published';
+    
+    console.log(`Article will be created with status: ${status}, isScheduled: ${isScheduled}`);
+    if (articleData.scheduledAt) {
+      console.log(`ScheduledAt timestamp: ${articleData.scheduledAt.toMillis()}, Current time: ${Date.now()}`);
+    }
+    
     const docRef = await addDoc(collection(db, 'articles'), {
       ...articleData,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
-      status: 'published',
+      status: status, // Ensure status is set correctly
       views: 0,
       likes: 0,
     });
     
-    console.log('Article successfully added to Firebase with ID:', docRef.id);
+    console.log(`Article successfully added to Firebase with ID: ${docRef.id}, status: ${status}`);
     return docRef.id;
   } catch (error) {
     console.error('Error adding article to Firebase:', error);
@@ -58,6 +71,36 @@ export const addArticle = async (articleData: Omit<Article, 'id' | 'createdAt' |
       message: errorObj.message,
       stack: errorObj.stack
     });
+    throw error;
+  }
+};
+
+// Publish scheduled articles
+export const publishScheduledArticles = async (): Promise<number> => {
+  try {
+    const now = Timestamp.now();
+    const q = query(
+      collection(db, 'articles'),
+      where('status', '==', 'scheduled'),
+      where('scheduledAt', '<=', now)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    let publishedCount = 0;
+    
+    for (const docSnapshot of querySnapshot.docs) {
+      const articleRef = doc(db, 'articles', docSnapshot.id);
+      await updateDoc(articleRef, {
+        status: 'published',
+        publishedAt: now.toDate().toISOString(),
+        updatedAt: Timestamp.now(),
+      });
+      publishedCount++;
+    }
+    
+    return publishedCount;
+  } catch (error) {
+    console.error('Error publishing scheduled articles:', error);
     throw error;
   }
 };

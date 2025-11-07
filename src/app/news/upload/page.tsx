@@ -1,12 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import RichTextEditor from '@/components/RichTextEditor';
 import { addArticle } from '@/lib/articles';
-import { Upload, Image, Save, Plus, X, Globe, Tag, Check, FileText, Calendar } from 'lucide-react';
+import { getTags, getRegions, type Tag as TagType, type Region as RegionType } from '@/lib/tagsAndRegions';
+import { useAuth } from '@/contexts/AuthContext';
+import { Upload, Image, Save, Plus, X, Globe, Tag, Check, FileText, Calendar, Clock } from 'lucide-react';
+import { Timestamp } from 'firebase/firestore';
 
 export default function UploadNewsPage() {
+  const { user } = useAuth();
+  
   const [formData, setFormData] = useState({
     title: '',
     summary: '',
@@ -20,20 +25,57 @@ export default function UploadNewsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isScheduled, setIsScheduled] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [scheduledDateTime, setScheduledDateTime] = useState(() => {
+    const date = new Date();
+    date.setHours(date.getHours() + 1);
+    date.setMinutes(0);
+    return date.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:mm
+  });
 
-  const regionOptions = [
-    'Eastern India',
-    'North India',
-    'Nagaland',
-    'India',
-    'International'
-  ];
+  // Tags and Regions from Firebase
+  const [availableTags, setAvailableTags] = useState<TagType[]>([]);
+  const [availableRegions, setAvailableRegions] = useState<RegionType[]>([]);
+  const [loadingTags, setLoadingTags] = useState(true);
 
-  const suggestedTags = [
-    'Technical', 'Political', 'Education', 'Health', 'Sports', 'Entertainment',
-    'Business', 'Science', 'Environment', 'Technology', 'Economy', 'Social',
-    'International', 'Local', 'Breaking', 'Analysis', 'Opinion', 'Investigative'
-  ];
+  // Fetch tags and regions from Firebase
+  useEffect(() => {
+    const loadTagsAndRegions = async () => {
+      try {
+        setLoadingTags(true);
+        const [tagsData, regionsData] = await Promise.all([
+          getTags(),
+          getRegions()
+        ]);
+        setAvailableTags(tagsData);
+        setAvailableRegions(regionsData);
+      } catch (error) {
+        console.error('Error loading tags and regions:', error);
+      } finally {
+        setLoadingTags(false);
+      }
+    };
+
+    loadTagsAndRegions();
+  }, []);
+
+  // Check for scheduled articles every minute (when page is open)
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        await fetch('/api/publish-scheduled', { method: 'POST' });
+      } catch (error) {
+        console.error('Error checking scheduled articles:', error);
+      }
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Convert to simple string arrays for easy use
+  const regionOptions = availableRegions.map(r => r.name);
+  const suggestedTags = availableTags.map(t => t.name);
 
 
   // Helper function to count words
@@ -150,6 +192,18 @@ export default function UploadNewsPage() {
     if (formData.tags.length === 0) {
       newErrors.tags = 'Please add at least one category';
     }
+
+    // Validate scheduled date if scheduling is enabled
+    if (isScheduled) {
+      if (!scheduledDateTime) {
+        newErrors.scheduledDateTime = 'Please select a scheduled date and time';
+      } else {
+        const scheduledDate = new Date(scheduledDateTime);
+        if (scheduledDate <= new Date()) {
+          newErrors.scheduledDateTime = 'Scheduled time must be in the future';
+        }
+      }
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -167,19 +221,29 @@ export default function UploadNewsPage() {
     
     try {
       
-      const articleData = {
+      // Get journalist name from user account
+      const journalistName = user?.displayName || 
+                           user?.email?.split('@')[0] || 
+                           'Anonymous';
+      
+      const articleData: any = {
         title: formData.title.trim(),
         summary: formData.summary.trim(),
         content: formData.content.trim(),
-        journalistName: '', // Default empty since removed from form
-        category: formData.tags.length > 0 ? formData.tags[0] : 'General',
-        region: formData.regions.length > 0 ? formData.regions[0] : 'General',
-        source: '', // Default empty since removed from form
+        journalistName: journalistName,
+        regions: formData.regions.length > 0 ? formData.regions : [],
         imageUrl: formData.imageUrl.trim(),
-        readTime: 5, // Default value since removed from form
         tags: formData.tags,
         publishedAt: new Date(formData.publishedAt).toISOString(),
       };
+
+      // Add scheduledAt if scheduling is enabled
+      if (isScheduled && scheduledDateTime) {
+        const scheduledDate = new Date(scheduledDateTime);
+        if (scheduledDate > new Date()) {
+          articleData.scheduledAt = Timestamp.fromDate(scheduledDate);
+        }
+      }
       
       console.log('Saving article to Firebase:', articleData);
       
@@ -261,7 +325,7 @@ export default function UploadNewsPage() {
               </div>
             )}
 
-            {/* Header */}
+        {/* Header */}
             <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-xl p-4 sm:p-5 shadow-lg text-white relative overflow-hidden">
               <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px] opacity-40"></div>
               <div className="relative z-10">
@@ -275,7 +339,15 @@ export default function UploadNewsPage() {
                       <p className="text-blue-100 text-xs hidden sm:block">Craft and publish professional news content</p>
               </div>
             </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+              <button 
+                type="button"
+                      onClick={() => setShowScheduleModal(true)}
+                      className="w-full sm:w-auto px-4 sm:px-5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-200 font-semibold border border-white/20 shadow-md hover:shadow-lg flex items-center justify-center text-sm"
+              >
+                      <Clock className="w-4 h-4 inline mr-2" />
+                      Schedule
+              </button>
               <button 
                 type="submit"
                 form="article-form"
@@ -285,12 +357,12 @@ export default function UploadNewsPage() {
                 {isSubmitting ? (
                   <>
                           <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin inline mr-2"></div>
-                    Publishing...
+                          {isScheduled ? 'Scheduling...' : 'Publishing...'}
                   </>
                 ) : (
                   <>
                     <Save className="w-4 h-4 inline mr-2" />
-                    Publish Article
+                          {isScheduled ? 'Schedule Article' : 'Publish Article'}
                   </>
                 )}
               </button>
@@ -472,37 +544,46 @@ export default function UploadNewsPage() {
                       )}
                     </h4>
                   <div className="flex flex-wrap gap-2">
-                      {suggestedTags.map((tag) => {
-                        const isSelected = formData.tags.includes(tag);
-                        return (
+                      {loadingTags ? (
+                        <div className="flex items-center text-sm text-slate-500">
+                          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                          Loading tags...
+                        </div>
+                      ) : suggestedTags.length > 0 ? (
+                        suggestedTags.map((tag) => {
+                          const isSelected = formData.tags.includes(tag);
+                          return (
                       <button
                         key={tag}
                         type="button"
-                            onClick={() => isSelected ? removeTag(tag) : addSuggestedTag(tag)}
-                            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 border ${
-                              isSelected
-                                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-blue-600 shadow-md hover:shadow-lg'
-                                : 'bg-white text-slate-700 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 border-slate-200 shadow-sm hover:shadow'
-                            }`}
-                          >
-                            <span className="flex items-center">
-                              {isSelected ? (
-                                <>
-                                  <Check className="w-3 h-3 mr-1.5" />
-                                  {tag}
-                                </>
-                              ) : (
-                                <>
-                                  <Plus className="w-3 h-3 mr-1.5" />
-                                  {tag}
-                                </>
-                              )}
-                            </span>
+                              onClick={() => isSelected ? removeTag(tag) : addSuggestedTag(tag)}
+                              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 border ${
+                                isSelected
+                                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-blue-600 shadow-md hover:shadow-lg'
+                                  : 'bg-white text-slate-700 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 border-slate-200 shadow-sm hover:shadow'
+                              }`}
+                            >
+                              <span className="flex items-center">
+                                {isSelected ? (
+                                  <>
+                                    <Check className="w-3 h-3 mr-1.5" />
+                                    {tag}
+                                  </>
+                                ) : (
+                                  <>
+                                    <Plus className="w-3 h-3 mr-1.5" />
+                                    {tag}
+                                  </>
+                                )}
+                              </span>
                       </button>
-                        );
-                      })}
+                          );
+                        })
+                      ) : (
+                        <p className="text-xs text-slate-500 italic">No tags available. Add tags in the Regions & Tags section.</p>
+                      )}
                     </div>
-                    {formData.tags.length === 0 && (
+                    {formData.tags.length === 0 && !loadingTags && suggestedTags.length > 0 && (
                       <p className="text-xs text-slate-500 italic mt-2">Click to select categories</p>
                     )}
                   </div>
@@ -529,9 +610,15 @@ export default function UploadNewsPage() {
                       <span className="ml-2 text-xs font-normal text-slate-500">(Where to show)</span>
                     </h4>
                   <div className="flex flex-wrap gap-2">
-                      {regionOptions.map((region) => {
-                        const isSelected = formData.regions.includes(region);
-                        return (
+                      {loadingTags ? (
+                        <div className="flex items-center text-sm text-slate-500">
+                          <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                          Loading regions...
+                        </div>
+                      ) : regionOptions.length > 0 ? (
+                        regionOptions.map((region) => {
+                          const isSelected = formData.regions.includes(region);
+                          return (
                         <button
                             key={region}
                           type="button"
@@ -556,10 +643,13 @@ export default function UploadNewsPage() {
                               )}
                             </span>
                         </button>
-                        );
-                      })}
+                          );
+                        })
+                      ) : (
+                        <p className="text-xs text-slate-500 italic">No regions available. Add regions in the Regions & Tags section.</p>
+                      )}
                     </div>
-                    {formData.regions.length === 0 && (
+                    {formData.regions.length === 0 && !loadingTags && regionOptions.length > 0 && (
                       <p className="text-xs text-slate-500 italic mt-2">Click to select regions</p>
                     )}
                   </div>
@@ -580,10 +670,13 @@ export default function UploadNewsPage() {
 
           {/* Phone Mockup Preview - Hidden on mobile/tablet */}
           <div className="hidden xl:block lg:col-span-1">
-            <div className="sticky overflow-x-hidden" style={{ 
-              top: 'calc(64px + 1.5rem)', 
-              height: 'calc(100vh - 64px - 3rem)', 
+            <div className="fixed overflow-x-hidden" style={{ 
+              top: '64px', 
+              height: 'calc(100vh - 64px)', 
+              width: 'calc(33.333% - 1.5rem)', 
+              right: '1.5rem', 
               maxWidth: '420px', 
+              zIndex: 10,
               overflowX: 'hidden'
             }}>
               <div className="h-full flex flex-col items-center justify-center">
@@ -700,7 +793,7 @@ export default function UploadNewsPage() {
                     <div 
                                 className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 prose-strong:text-gray-900 break-words overflow-wrap-anywhere"
                                 style={{ fontSize: '14px', wordBreak: 'break-word', overflowWrap: 'anywhere' }}
-                                dangerouslySetInnerHTML={{ __html: formData.content }}
+                      dangerouslySetInnerHTML={{ __html: formData.content }}
                     />
                   </div>
               )}
@@ -718,6 +811,150 @@ export default function UploadNewsPage() {
           </div>
         </div>
       </div>
+
+      {/* Schedule Modal */}
+      {showScheduleModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowScheduleModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <Clock className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-800">Schedule Article</h2>
+                  <p className="text-xs text-slate-500">Choose when to publish this article</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowScheduleModal(false)}
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-600" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-800 mb-2">
+                    Select Date & Time *
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Date Input */}
+                    <div className="space-y-1">
+                      <label htmlFor="scheduleDate" className="block text-xs font-medium text-slate-600">
+                        Date
+                      </label>
+                      <div className="relative">
+                        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input
+                          type="date"
+                          id="scheduleDate"
+                          value={scheduledDateTime.split('T')[0]}
+                          onChange={(e) => {
+                            const time = scheduledDateTime.split('T')[1] || '12:00';
+                            setScheduledDateTime(`${e.target.value}T${time}`);
+                          }}
+                          min={new Date().toISOString().split('T')[0]}
+                          className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-sm text-slate-800 bg-white ${
+                            errors.scheduledDateTime ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-slate-200'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Time Input */}
+                    <div className="space-y-1">
+                      <label htmlFor="scheduleTime" className="block text-xs font-medium text-slate-600">
+                        Time
+                      </label>
+                      <div className="relative">
+                        <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input
+                          type="time"
+                          id="scheduleTime"
+                          value={scheduledDateTime.split('T')[1] || '12:00'}
+                          onChange={(e) => {
+                            const date = scheduledDateTime.split('T')[0] || new Date().toISOString().split('T')[0];
+                            setScheduledDateTime(`${date}T${e.target.value}`);
+                          }}
+                          className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-sm text-slate-800 bg-white ${
+                            errors.scheduledDateTime ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-slate-200'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Preview */}
+                  <div className="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                    <p className="text-xs font-medium text-purple-900 mb-1">Scheduled for:</p>
+                    <p className="text-sm font-semibold text-purple-700">
+                      {new Date(scheduledDateTime).toLocaleString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </p>
+                  </div>
+                  
+                  {errors.scheduledDateTime && (
+                    <p className="text-sm text-red-600 flex items-center mt-2">
+                      <X className="w-3 h-3 mr-1" />
+                      {errors.scheduledDateTime}
+                    </p>
+                  )}
+                </div>
+                
+                <p className="text-xs text-slate-500 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                  <strong className="text-blue-900">Note:</strong> The article will be automatically published at the selected date and time. Make sure the time is in the future.
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowScheduleModal(false);
+                    setIsScheduled(false);
+                    setScheduledDateTime(() => {
+                      const date = new Date();
+                      date.setHours(date.getHours() + 1);
+                      date.setMinutes(0);
+                      return date.toISOString().slice(0, 16);
+                    });
+                  }}
+                  className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-all duration-200 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const scheduledDate = new Date(scheduledDateTime);
+                    if (scheduledDate <= new Date()) {
+                      setErrors({ scheduledDateTime: 'Scheduled time must be in the future' });
+                      return;
+                    }
+                    setIsScheduled(true);
+                    setShowScheduleModal(false);
+                    setErrors({});
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all duration-200 font-semibold shadow-md hover:shadow-lg flex items-center justify-center"
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  Set Schedule
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }

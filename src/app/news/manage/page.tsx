@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Layout from '@/components/Layout';
-import { getArticles, deleteArticle, Article } from '@/lib/articles';
-import { Search, Trash2, Eye, Calendar, User, Tag, ChevronDown, Check, FileText, Globe, X } from 'lucide-react';
+import { getArticles, deleteArticle, updateArticle, Article } from '@/lib/articles';
+import { Search, Trash2, Eye, Calendar, User, Tag, ChevronDown, Check, FileText, Globe, X, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 
 export default function ManageNewsPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,6 +18,10 @@ export default function ManageNewsPage() {
   const [error, setError] = useState('');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  
+  // Sorting state
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   const categoryOptions = [
     'all',
@@ -95,16 +99,21 @@ export default function ManageNewsPage() {
     }
   };
 
-  const handleToggleStatus = (id: string, currentStatus: string) => {
+  const handleToggleStatus = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'published' ? 'removed' : 'published';
-    setArticles(prevArticles => 
-      prevArticles.map(article => 
-        article.id === id 
-          ? { ...article, status: newStatus }
-          : article
-      )
-    );
-    console.log(`Article ${id} status updated to ${newStatus}`);
+    try {
+      await updateArticle(id, { status: newStatus as any });
+      setArticles(prevArticles => 
+        prevArticles.map(article => 
+          article.id === id 
+            ? { ...article, status: newStatus }
+            : article
+        )
+      );
+    } catch (error) {
+      console.error('Error updating article status:', error);
+      alert('Failed to update article status');
+    }
   };
 
   const handleReviewArticle = (article: Article) => {
@@ -126,6 +135,100 @@ export default function ManageNewsPage() {
     
     return matchesSearch && matchesCategory && matchesStatus;
   });
+
+  // Sorting function
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('desc');
+    }
+  };
+
+  // Apply sorting
+  const sortedArticles = [...filteredArticles].sort((a, b) => {
+    if (!sortColumn) return 0;
+    
+    let aValue: any;
+    let bValue: any;
+    
+    switch (sortColumn) {
+      case 'title':
+        aValue = a.title.toLowerCase();
+        bValue = b.title.toLowerCase();
+        break;
+      case 'author':
+        aValue = (a.journalistName || '').toLowerCase();
+        bValue = (b.journalistName || '').toLowerCase();
+        break;
+      case 'published':
+        try {
+          // Handle Firestore Timestamp
+          if (a.publishedAt && typeof a.publishedAt === 'object' && 'toDate' in a.publishedAt) {
+            aValue = a.publishedAt.toDate().getTime();
+          } else if (a.publishedAt && typeof a.publishedAt === 'object' && 'toMillis' in a.publishedAt) {
+            aValue = a.publishedAt.toMillis();
+          } else if (a.publishedAt) {
+            aValue = new Date(a.publishedAt).getTime();
+          } else {
+            aValue = 0;
+          }
+          
+          if (b.publishedAt && typeof b.publishedAt === 'object' && 'toDate' in b.publishedAt) {
+            bValue = b.publishedAt.toDate().getTime();
+          } else if (b.publishedAt && typeof b.publishedAt === 'object' && 'toMillis' in b.publishedAt) {
+            bValue = b.publishedAt.toMillis();
+          } else if (b.publishedAt) {
+            bValue = new Date(b.publishedAt).getTime();
+          } else {
+            bValue = 0;
+          }
+        } catch (error) {
+          aValue = 0;
+          bValue = 0;
+        }
+        break;
+      case 'category':
+        aValue = (a.category || (a.tags && a.tags[0] ? a.tags[0] : '')).toLowerCase();
+        bValue = (b.category || (b.tags && b.tags[0] ? b.tags[0] : '')).toLowerCase();
+        break;
+      case 'status':
+        aValue = (a.status || 'published').toLowerCase();
+        bValue = (b.status || 'published').toLowerCase();
+        break;
+      case 'views':
+        aValue = a.views || 0;
+        bValue = b.views || 0;
+        break;
+      case 'likes':
+        aValue = a.likes || 0;
+        bValue = b.likes || 0;
+        break;
+      case 'region':
+        // Handle both regions array and single region for backward compatibility
+        const aRegions = a.regions && a.regions.length > 0 ? a.regions : (a.region ? [a.region] : []);
+        const bRegions = b.regions && b.regions.length > 0 ? b.regions : (b.region ? [b.region] : []);
+        aValue = aRegions.length > 0 ? aRegions[0].toLowerCase() : '';
+        bValue = bRegions.length > 0 ? bRegions[0].toLowerCase() : '';
+        break;
+      default:
+        return 0;
+    }
+    
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const getSortIcon = (column: string) => {
+    if (sortColumn !== column) {
+      return <ArrowUpDown className="w-3 h-3 ml-1 text-slate-400" />;
+    }
+    return sortDirection === 'asc' 
+      ? <ArrowUp className="w-3 h-3 ml-1 text-blue-600" />
+      : <ArrowDown className="w-3 h-3 ml-1 text-blue-600" />;
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -161,32 +264,36 @@ export default function ManageNewsPage() {
           </div>
         </div>
 
-        {/* Filters */}
+        {/* Articles Table */}
         <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-          <div className="p-6 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-white">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Search className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-slate-800">Filters</h2>
-                <p className="text-xs text-slate-500">Search and filter your articles</p>
+          {/* Header with Filters */}
+          <div className="p-4 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-white">
+            <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-1.5 bg-blue-100 rounded-lg">
+                  <FileText className="w-4 h-4 text-blue-600" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-slate-800">Articles</h2>
+                  <p className="text-xs text-slate-500">
+                    {sortedArticles.length} {sortedArticles.length === 1 ? 'article' : 'articles'}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-          
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            
+            {/* Filters Row */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               {/* Search */}
               <div className="md:col-span-2">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                   <input
                     type="text"
                     placeholder="Search articles..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-slate-800 bg-white"
+                    className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm text-slate-800 bg-white"
                   />
                 </div>
               </div>
@@ -197,32 +304,32 @@ export default function ManageNewsPage() {
                   <button
                     type="button"
                     onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm transition-all duration-200"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-xs transition-all duration-200"
                   >
-                    <span className="text-slate-800">
+                    <span className="text-slate-800 truncate">
                       {selectedCategory === 'all' ? 'All Categories' : selectedCategory}
                     </span>
-                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform flex-shrink-0 ml-1 ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   
                   {isCategoryDropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-50 overflow-hidden max-h-60 overflow-y-auto">
                       <button
                         key="all"
                         onClick={() => { setSelectedCategory('all'); setIsCategoryDropdownOpen(false); }}
-                        className="w-full px-4 py-3 text-left text-slate-800 hover:bg-blue-50 transition-colors flex items-center justify-between border-b border-slate-100"
+                        className="w-full px-3 py-2 text-left text-slate-800 hover:bg-blue-50 transition-colors flex items-center justify-between border-b border-slate-100 text-xs"
                       >
                         <span>All Categories</span>
-                        {selectedCategory === 'all' && <Check className="w-4 h-4 text-blue-600" />}
+                        {selectedCategory === 'all' && <Check className="w-3 h-3 text-blue-600" />}
                       </button>
                       {categoryOptions.filter(opt => opt !== 'all').map((category) => (
                         <button
                           key={category}
                           onClick={() => { setSelectedCategory(category); setIsCategoryDropdownOpen(false); }}
-                          className="w-full px-4 py-3 text-left text-slate-800 hover:bg-blue-50 transition-colors flex items-center justify-between border-b border-slate-100 last:border-b-0"
+                          className="w-full px-3 py-2 text-left text-slate-800 hover:bg-blue-50 transition-colors flex items-center justify-between border-b border-slate-100 last:border-b-0 text-xs"
                         >
                           <span>{category}</span>
-                          {selectedCategory === category && <Check className="w-4 h-4 text-blue-600" />}
+                          {selectedCategory === category && <Check className="w-3 h-3 text-blue-600" />}
                         </button>
                       ))}
                     </div>
@@ -236,46 +343,29 @@ export default function ManageNewsPage() {
                   <button
                     type="button"
                     onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm transition-all duration-200"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-xs transition-all duration-200"
                   >
-                    <span className="text-slate-800">
+                    <span className="text-slate-800 truncate">
                       {statusOptions.find(opt => opt.value === selectedStatus)?.label || 'All Status'}
                     </span>
-                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform flex-shrink-0 ml-1 ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   
                   {isStatusDropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-50 overflow-hidden">
                       {statusOptions.map((option) => (
                         <button
                           key={option.value}
                           onClick={() => { setSelectedStatus(option.value); setIsStatusDropdownOpen(false); }}
-                          className="w-full px-4 py-3 text-left text-slate-800 hover:bg-blue-50 transition-colors flex items-center justify-between border-b border-slate-100 last:border-b-0"
+                          className="w-full px-3 py-2 text-left text-slate-800 hover:bg-blue-50 transition-colors flex items-center justify-between border-b border-slate-100 last:border-b-0 text-xs"
                         >
                           <span>{option.label}</span>
-                          {selectedStatus === option.value && <Check className="w-4 h-4 text-blue-600" />}
+                          {selectedStatus === option.value && <Check className="w-3 h-3 text-blue-600" />}
                         </button>
                       ))}
                     </div>
                   )}
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Articles List */}
-        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-          <div className="p-6 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-white">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <FileText className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-slate-800">Articles</h2>
-                <p className="text-xs text-slate-500">
-                  {filteredArticles.length} {filteredArticles.length === 1 ? 'article' : 'articles'} found
-                </p>
               </div>
             </div>
           </div>
@@ -295,7 +385,7 @@ export default function ManageNewsPage() {
                 Try Again
               </button>
             </div>
-          ) : filteredArticles.length === 0 ? (
+          ) : sortedArticles.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-sm text-slate-600 mb-2">No articles found</p>
               <p className="text-xs text-slate-500">Create your first article to get started</p>
@@ -303,75 +393,181 @@ export default function ManageNewsPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gradient-to-br from-slate-50 to-white border-b border-slate-200">
+                <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                      Article
+                    <th 
+                      className="px-4 py-2.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors"
+                      onClick={() => handleSort('title')}
+                    >
+                      <div className="flex items-center">
+                        Article
+                        {getSortIcon('title')}
+                      </div>
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                      Author
+                    <th 
+                      className="px-4 py-2.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors"
+                      onClick={() => handleSort('author')}
+                    >
+                      <div className="flex items-center">
+                        Author
+                        {getSortIcon('author')}
+                      </div>
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                      Published
+                    <th 
+                      className="px-4 py-2.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors"
+                      onClick={() => handleSort('published')}
+                    >
+                      <div className="flex items-center">
+                        Published
+                        {getSortIcon('published')}
+                      </div>
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                      Category
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Tags
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                      Status
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Regions
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                    <th 
+                      className="px-4 py-2.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors"
+                      onClick={() => handleSort('status')}
+                    >
+                      <div className="flex items-center">
+                        Status
+                        {getSortIcon('status')}
+                      </div>
+                    </th>
+                    <th 
+                      className="px-4 py-2.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors"
+                      onClick={() => handleSort('views')}
+                    >
+                      <div className="flex items-center">
+                        Views
+                        {getSortIcon('views')}
+                      </div>
+                    </th>
+                    <th 
+                      className="px-4 py-2.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors"
+                      onClick={() => handleSort('likes')}
+                    >
+                      <div className="flex items-center">
+                        Likes
+                        {getSortIcon('likes')}
+                      </div>
+                    </th>
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-slate-200">
-                  {filteredArticles.map((article) => (
+                <tbody className="bg-white divide-y divide-slate-100">
+                  {sortedArticles.map((article) => (
                     <tr 
                       key={article.id} 
                       onClick={() => handleReviewArticle(article)}
-                      className="hover:bg-blue-50/50 transition-colors cursor-pointer"
+                      className="hover:bg-blue-50/30 transition-colors cursor-pointer group"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-12 w-12">
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex-shrink-0 h-9 w-9">
                             <img
-                              className="h-12 w-12 rounded-xl object-cover ring-2 ring-blue-100 shadow-sm"
+                              className="h-9 w-9 rounded-lg object-cover ring-1 ring-slate-200"
                               src={article.imageUrl}
                               alt={article.title}
                               onError={(e) => {
-                                e.currentTarget.src = 'https://via.placeholder.com/48x48?text=No+Image';
+                                e.currentTarget.src = 'https://via.placeholder.com/36x36?text=No+Image';
                               }}
                             />
                           </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-semibold text-slate-800 max-w-xs truncate">
+                          <div className="min-w-0 flex-1 max-w-[200px]">
+                            <div className="text-xs font-semibold text-slate-800 truncate group-hover:text-blue-600 transition-colors">
                               {article.title}
-                            </div>
-                            <div className="text-xs text-slate-500 mt-0.5">
-                              {article.views || 0} views
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
-                        {article.journalistName || 'N/A'}
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        <div className="text-xs text-slate-700 truncate max-w-[120px]">
+                          {article.journalistName && article.journalistName.trim() !== '' ? article.journalistName : 'N/A'}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
-                        {new Date(article.publishedAt).toLocaleDateString()}
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        <div className="text-xs text-slate-700">
+                          {(() => {
+                            try {
+                              let date: Date;
+                              if (!article.publishedAt) {
+                                return '—';
+                              }
+                              // Handle Firestore Timestamp
+                              if (typeof article.publishedAt === 'object' && 'toDate' in article.publishedAt) {
+                                date = article.publishedAt.toDate();
+                              } 
+                              // Handle Timestamp with toMillis
+                              else if (typeof article.publishedAt === 'object' && 'toMillis' in article.publishedAt) {
+                                date = new Date(article.publishedAt.toMillis());
+                              }
+                              // Handle string or number
+                              else {
+                                date = new Date(article.publishedAt);
+                              }
+                              
+                              // Check if date is valid
+                              if (isNaN(date.getTime())) {
+                                return '—';
+                              }
+                              
+                              return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                            } catch (error) {
+                              console.error('Error parsing publishedAt:', article.publishedAt, error);
+                              return '—';
+                            }
+                          })()}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {article.tags && article.tags.length > 0 ? (
-                          <span className="inline-flex items-center px-2.5 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-medium">
-                            {article.tags[0]}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-slate-400">No Category</span>
-                        )}
+                      <td className="px-4 py-2.5">
+                        <div className="flex flex-wrap gap-1.5 max-w-[250px]">
+                          {article.tags && article.tags.length > 0 ? (
+                            article.tags.map((tag, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-2.5 py-1 bg-blue-100 text-blue-800 rounded-md text-xs font-medium border border-blue-200 shadow-sm"
+                              >
+                                {tag}
+                              </span>
+                            ))
+                          ) : article.category ? (
+                            <span className="inline-flex items-center px-2.5 py-1 bg-blue-100 text-blue-800 rounded-md text-xs font-medium border border-blue-200 shadow-sm">
+                              {article.category}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-slate-400">—</span>
+                          )}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center space-x-3">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(article.status || 'published')}`}>
+                      <td className="px-4 py-2.5">
+                        <div className="flex flex-wrap gap-1.5 max-w-[200px]">
+                          {article.regions && article.regions.length > 0 ? (
+                            article.regions.map((region, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-2.5 py-1 bg-green-100 text-green-800 rounded-md text-xs font-medium border border-green-200 shadow-sm"
+                              >
+                                {region}
+                              </span>
+                            ))
+                          ) : article.region ? (
+                            <span className="inline-flex items-center px-2.5 py-1 bg-green-100 text-green-800 rounded-md text-xs font-medium border border-green-200 shadow-sm">
+                              {article.region}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-slate-400">—</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${getStatusColor(article.status || 'published')}`}>
                             {(article.status || 'published').charAt(0).toUpperCase() + (article.status || 'published').slice(1)}
                           </span>
                           <button
@@ -379,41 +575,51 @@ export default function ManageNewsPage() {
                               e.stopPropagation();
                               handleToggleStatus(article.id!, article.status || 'published');
                             }}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white ${
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-white ${
                               (article.status || 'published') === 'published' 
                                 ? 'bg-emerald-500 focus:ring-emerald-500' 
-                                : 'bg-red-500 focus:ring-red-500'
+                                : 'bg-slate-300 focus:ring-slate-400'
                             }`}
                           >
                             <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
-                                (article.status || 'published') === 'published' ? 'translate-x-6' : 'translate-x-1'
+                              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform shadow-sm ${
+                                (article.status || 'published') === 'published' ? 'translate-x-5' : 'translate-x-0.5'
                               }`}
                             />
                           </button>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center space-x-2">
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        <div className="text-xs font-medium text-slate-700">
+                          {(article.views || 0).toLocaleString()}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        <div className="text-xs font-medium text-slate-700">
+                          {(article.likes || 0).toLocaleString()}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
                               handleReviewArticle(article);
                             }}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="View Article"
+                            className="p-1.5 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                            title="View"
                           >
-                            <Eye className="w-4 h-4" />
+                            <Eye className="w-3.5 h-3.5" />
                           </button>
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteArticle(article.id!);
                             }}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Delete Article"
+                            className="p-1.5 text-red-600 hover:bg-red-100 rounded transition-colors"
+                            title="Delete"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
@@ -424,25 +630,16 @@ export default function ManageNewsPage() {
             </div>
           )}
 
-          {/* Pagination */}
-          <div className="px-6 py-4 border-t border-slate-200 bg-gradient-to-br from-slate-50 to-white">
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-slate-600">
-                Showing 1 to {filteredArticles.length} of {filteredArticles.length} results
-              </p>
-              <div className="flex space-x-2">
-                <button className="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-white transition-colors font-medium">
-                  Previous
-                </button>
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors shadow-md font-medium">
-                  1
-                </button>
-                <button className="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-white transition-colors font-medium">
-                  Next
-                </button>
+          {/* Footer */}
+          {sortedArticles.length > 0 && (
+            <div className="px-4 py-3 border-t border-slate-200 bg-slate-50">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-slate-600">
+                  Showing <span className="font-semibold">{sortedArticles.length}</span> of <span className="font-semibold">{articles.length}</span> articles
+                </p>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Review Modal */}
