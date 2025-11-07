@@ -7,6 +7,11 @@ export default function TermsAndConditions() {
   return (
     <>
       <style dangerouslySetInnerHTML={{__html: `
+        body {
+          background-color: #ffffff !important;
+          margin: 0;
+          padding: 0;
+        }
         .terms-container * {
           margin: 0;
           padding: 0;

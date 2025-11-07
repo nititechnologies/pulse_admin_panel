@@ -12,6 +12,11 @@ export default function PrivacyPolicy() {
           padding: 0;
           box-sizing: border-box;
         }
+        body {
+          background-color: #ffffff !important;
+          margin: 0;
+          padding: 0;
+        }
         .privacy-policy-container {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
           line-height: 1.6;
