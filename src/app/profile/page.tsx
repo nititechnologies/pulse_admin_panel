@@ -7,21 +7,33 @@ import { User, Mail, Phone, Calendar, Save, Edit, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
+interface ProfileData {
+  name: string;
+  email: string;
+  role: string;
+  phone: string;
+  joinDate: string;
+  bio: string;
+  timezone: string;
+  profilePicture?: string | null;
+}
+
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState({
+  const [profileData, setProfileData] = useState<ProfileData>({
     name: 'Admin User',
     email: 'admin@pulse.com',
     role: 'Administrator',
     phone: '+1 (555) 123-4567',
     joinDate: '2024-01-15',
     bio: 'Experienced administrator managing content and user operations for the PULSE platform.',
-    timezone: 'EST (UTC-5)'
+    timezone: 'EST (UTC-5)',
+    profilePicture: null
   });
   const { logout } = useAuth();
   const router = useRouter();
 
-  const handleProfileUpdate = (field: string, value: string) => {
+  const handleProfileUpdate = (field: string, value: string | null) => {
     setProfileData(prev => ({ ...prev, [field]: value }));
   };
 
