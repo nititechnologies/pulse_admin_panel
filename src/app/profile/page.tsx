@@ -28,7 +28,7 @@ export default function ProfilePage() {
     joinDate: '2024-01-15',
     bio: 'Experienced administrator managing content and user operations for the PULSE platform.',
     timezone: 'EST (UTC-5)',
-    profilePicture: null as string | null
+    profilePicture: null
   });
   const { logout } = useAuth();
   const router = useRouter();
