@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import RichTextEditor from '@/components/RichTextEditor';
-import { addArticle } from '@/lib/articles';
+import { addArticle, type Article } from '@/lib/articles';
 import { getTags, getRegions, type Tag as TagType, type Region as RegionType } from '@/lib/tagsAndRegions';
 import { useAuth } from '@/contexts/AuthContext';
 import { Upload, Image, Save, Plus, X, Globe, Tag, Check, FileText, Calendar, Clock } from 'lucide-react';
@@ -226,7 +226,7 @@ export default function UploadNewsPage() {
                            user?.email?.split('@')[0] || 
                            'Anonymous';
       
-      const articleData: any = {
+      const articleData: Omit<Article, 'id' | 'createdAt' | 'updatedAt'> = {
         title: formData.title.trim(),
         summary: formData.summary.trim(),
         content: formData.content.trim(),

@@ -16,7 +16,7 @@ export default function RichTextEditor({
   placeholder = "Write your article content here...", 
   className = "" 
 }: RichTextEditorProps) {
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<{ getContent: () => string; setContent: (content: string) => void } | null>(null);
 
   return (
     <div className={`rich-text-editor ${className}`}>
@@ -44,7 +44,7 @@ export default function RichTextEditor({
           resize: true,
           statusbar: false,
           block_formats: 'Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Heading 4=h4; Blockquote=blockquote',
-          setup: (editor: any) => {
+          setup: (editor: { getContent: () => string; setContent: (content: string) => void; on: (event: string, callback: () => void) => void }) => {
             editor.on('init', () => {
               if (!value) {
                 editor.setContent('');

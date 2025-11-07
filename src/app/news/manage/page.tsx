@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Layout from '@/components/Layout';
 import { getArticles, deleteArticle, updateArticle, Article } from '@/lib/articles';
 import { Search, Trash2, Eye, Calendar, User, Tag, ChevronDown, Check, FileText, Globe, X, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import { Timestamp } from 'firebase/firestore';
 
 export default function ManageNewsPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -100,9 +101,9 @@ export default function ManageNewsPage() {
   };
 
   const handleToggleStatus = async (id: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'published' ? 'removed' : 'published';
+    const newStatus: 'published' | 'removed' = currentStatus === 'published' ? 'removed' : 'published';
     try {
-      await updateArticle(id, { status: newStatus as any });
+      await updateArticle(id, { status: newStatus });
       setArticles(prevArticles => 
         prevArticles.map(article => 
           article.id === id 
@@ -150,8 +151,8 @@ export default function ManageNewsPage() {
   const sortedArticles = [...filteredArticles].sort((a, b) => {
     if (!sortColumn) return 0;
     
-    let aValue: any;
-    let bValue: any;
+    let aValue: string | number;
+    let bValue: string | number;
     
     switch (sortColumn) {
       case 'title':
@@ -165,22 +166,25 @@ export default function ManageNewsPage() {
       case 'published':
         try {
           // Handle Firestore Timestamp
-          if (a.publishedAt && typeof a.publishedAt === 'object' && 'toDate' in a.publishedAt) {
-            aValue = a.publishedAt.toDate().getTime();
-          } else if (a.publishedAt && typeof a.publishedAt === 'object' && 'toMillis' in a.publishedAt) {
-            aValue = a.publishedAt.toMillis();
-          } else if (a.publishedAt) {
-            aValue = new Date(a.publishedAt).getTime();
+          const aPublishedAt = a.publishedAt as string | Timestamp | undefined;
+          const bPublishedAt = b.publishedAt as string | Timestamp | undefined;
+          
+          if (aPublishedAt && typeof aPublishedAt === 'object' && 'toDate' in aPublishedAt) {
+            aValue = (aPublishedAt as Timestamp).toDate().getTime();
+          } else if (aPublishedAt && typeof aPublishedAt === 'object' && 'toMillis' in aPublishedAt) {
+            aValue = (aPublishedAt as Timestamp).toMillis();
+          } else if (aPublishedAt) {
+            aValue = new Date(aPublishedAt as string).getTime();
           } else {
             aValue = 0;
           }
           
-          if (b.publishedAt && typeof b.publishedAt === 'object' && 'toDate' in b.publishedAt) {
-            bValue = b.publishedAt.toDate().getTime();
-          } else if (b.publishedAt && typeof b.publishedAt === 'object' && 'toMillis' in b.publishedAt) {
-            bValue = b.publishedAt.toMillis();
-          } else if (b.publishedAt) {
-            bValue = new Date(b.publishedAt).getTime();
+          if (bPublishedAt && typeof bPublishedAt === 'object' && 'toDate' in bPublishedAt) {
+            bValue = (bPublishedAt as Timestamp).toDate().getTime();
+          } else if (bPublishedAt && typeof bPublishedAt === 'object' && 'toMillis' in bPublishedAt) {
+            bValue = (bPublishedAt as Timestamp).toMillis();
+          } else if (bPublishedAt) {
+            bValue = new Date(bPublishedAt as string).getTime();
           } else {
             bValue = 0;
           }
@@ -500,12 +504,13 @@ export default function ManageNewsPage() {
                                 return '—';
                               }
                               // Handle Firestore Timestamp
-                              if (typeof article.publishedAt === 'object' && 'toDate' in article.publishedAt) {
-                                date = article.publishedAt.toDate();
+                              const publishedAt = article.publishedAt as string | Timestamp | undefined;
+                              if (publishedAt && typeof publishedAt === 'object' && 'toDate' in publishedAt) {
+                                date = (publishedAt as Timestamp).toDate();
                               } 
                               // Handle Timestamp with toMillis
-                              else if (typeof article.publishedAt === 'object' && 'toMillis' in article.publishedAt) {
-                                date = new Date(article.publishedAt.toMillis());
+                              else if (publishedAt && typeof publishedAt === 'object' && 'toMillis' in publishedAt) {
+                                date = new Date((publishedAt as Timestamp).toMillis());
                               }
                               // Handle string or number
                               else {

@@ -104,8 +104,8 @@ export default function ManageAdsPage() {
   const sortedAds = [...filteredCampaigns].sort((a, b) => {
     if (!sortColumn) return 0;
     
-    let aValue: any;
-    let bValue: any;
+    let aValue: string | number;
+    let bValue: string | number;
     
     switch (sortColumn) {
       case 'title':
@@ -211,13 +211,13 @@ export default function ManageAdsPage() {
   };
 
   const handleToggleStatus = async (id: string, currentStatus: string = 'draft') => {
-    const newStatus = currentStatus === 'published' ? 'removed' : 'published';
+    const newStatus: 'published' | 'removed' = currentStatus === 'published' ? 'removed' : 'published';
     try {
-      await updateAd(id, { status: newStatus as any });
+      await updateAd(id, { status: newStatus });
       setAds(prevAds => 
         prevAds.map(ad => 
           ad.id === id 
-            ? { ...ad, status: newStatus as any }
+            ? { ...ad, status: newStatus }
             : ad
         )
       );

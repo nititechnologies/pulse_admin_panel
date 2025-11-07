@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Layout from '@/components/Layout';
 import { Plus, Image, Save, X, Link as LinkIcon, Clock, Calendar, Upload } from 'lucide-react';
-import { addAd } from '@/lib/ads';
+import { addAd, type Ad } from '@/lib/ads';
 import { uploadImage } from '@/lib/storage';
 import { Timestamp } from 'firebase/firestore';
 
@@ -185,7 +185,7 @@ export default function CreateAdPage() {
         }
       }
       
-      const adData: any = {
+      const adData: Omit<Ad, 'id' | 'createdAt' | 'updatedAt'> = {
         title: formData.title.trim(),
         imageUrl: imageUrl,
         redirectLink: formData.redirectLink.trim(),
