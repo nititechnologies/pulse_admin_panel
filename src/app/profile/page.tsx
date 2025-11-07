@@ -15,7 +15,7 @@ interface ProfileData {
   joinDate: string;
   bio: string;
   timezone: string;
-  profilePicture?: string | null;
+  profilePicture: string | null;
 }
 
 export default function ProfilePage() {
