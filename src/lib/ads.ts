@@ -22,6 +22,7 @@ export interface Ad {
   status?: 'draft' | 'published' | 'archived' | 'removed' | 'scheduled';
   scheduledAt?: Timestamp;
   views?: number;
+  impressions?: number; // Alias for views, used in UI
   clicks?: number;
 }
 

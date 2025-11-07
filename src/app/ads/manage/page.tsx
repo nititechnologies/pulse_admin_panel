@@ -130,26 +130,29 @@ export default function ManageAdsPage() {
         break;
       case 'created':
         try {
-          if (a.createdAt && typeof a.createdAt === 'object' && 'toDate' in a.createdAt) {
-            aValue = a.createdAt.toDate().getTime();
-          } else if (a.createdAt && typeof a.createdAt === 'object' && 'toMillis' in a.createdAt) {
-            aValue = a.createdAt.toMillis();
-          } else if (a.createdAt) {
-            aValue = new Date(a.createdAt).getTime();
+          const aCreatedAt = a.createdAt as Timestamp | string | number | undefined;
+          const bCreatedAt = b.createdAt as Timestamp | string | number | undefined;
+          
+          if (aCreatedAt && typeof aCreatedAt === 'object' && 'toDate' in aCreatedAt) {
+            aValue = (aCreatedAt as Timestamp).toDate().getTime();
+          } else if (aCreatedAt && typeof aCreatedAt === 'object' && 'toMillis' in aCreatedAt) {
+            aValue = (aCreatedAt as Timestamp).toMillis();
+          } else if (aCreatedAt) {
+            aValue = new Date(aCreatedAt as string | number).getTime();
           } else {
             aValue = 0;
           }
           
-          if (b.createdAt && typeof b.createdAt === 'object' && 'toDate' in b.createdAt) {
-            bValue = b.createdAt.toDate().getTime();
-          } else if (b.createdAt && typeof b.createdAt === 'object' && 'toMillis' in b.createdAt) {
-            bValue = b.createdAt.toMillis();
-          } else if (b.createdAt) {
-            bValue = new Date(b.createdAt).getTime();
+          if (bCreatedAt && typeof bCreatedAt === 'object' && 'toDate' in bCreatedAt) {
+            bValue = (bCreatedAt as Timestamp).toDate().getTime();
+          } else if (bCreatedAt && typeof bCreatedAt === 'object' && 'toMillis' in bCreatedAt) {
+            bValue = (bCreatedAt as Timestamp).toMillis();
+          } else if (bCreatedAt) {
+            bValue = new Date(bCreatedAt as string | number).getTime();
           } else {
             bValue = 0;
           }
-        } catch (error) {
+        } catch {
           aValue = 0;
           bValue = 0;
         }
@@ -520,12 +523,15 @@ export default function ManageAdsPage() {
                             try {
                               if (!ad.createdAt) return '—';
                               let date: Date;
-                              if (typeof ad.createdAt === 'object' && 'toDate' in ad.createdAt) {
-                                date = ad.createdAt.toDate();
-                              } else if (typeof ad.createdAt === 'object' && 'toMillis' in ad.createdAt) {
-                                date = new Date(ad.createdAt.toMillis());
+                              const createdAt = ad.createdAt as Timestamp | string | number | undefined;
+                              if (createdAt && typeof createdAt === 'object' && 'toDate' in createdAt) {
+                                date = (createdAt as Timestamp).toDate();
+                              } else if (createdAt && typeof createdAt === 'object' && 'toMillis' in createdAt) {
+                                date = new Date((createdAt as Timestamp).toMillis());
+                              } else if (createdAt) {
+                                date = new Date(createdAt as string | number);
                               } else {
-                                date = new Date(ad.createdAt);
+                                date = new Date();
                               }
                               if (isNaN(date.getTime())) return '—';
                               return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -558,8 +564,8 @@ export default function ManageAdsPage() {
                       <td className="px-4 py-2.5 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${getStatusColor(ad.status)}`}>
-                            {ad.status?.charAt(0).toUpperCase() + ad.status?.slice(1) || 'Draft'}
-                        </span>
+                            {ad.status ? ad.status.charAt(0).toUpperCase() + ad.status.slice(1) : 'Draft'}
+                          </span>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -660,7 +666,7 @@ export default function ManageAdsPage() {
                           <div className="flex items-center space-x-3">
                             <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border-2 ${getStatusColor(selectedCampaign.status)}`}>
                               {getStatusIcon(selectedCampaign.status)}
-                              <span className="ml-1.5">{selectedCampaign.status?.charAt(0).toUpperCase() + selectedCampaign.status?.slice(1) || 'Draft'}</span>
+                              <span className="ml-1.5">{selectedCampaign.status ? selectedCampaign.status.charAt(0).toUpperCase() + selectedCampaign.status.slice(1) : 'Draft'}</span>
                             </span>
                           </div>
                         </div>
