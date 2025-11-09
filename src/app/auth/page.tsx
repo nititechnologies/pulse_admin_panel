@@ -141,15 +141,15 @@ export default function AuthPage() {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-[#323232] mb-2">
-                Email
+                {isLogin ? 'Email or Username' : 'Email'}
               </label>
               <input
                 id="email"
-                type="email"
+                type={isLogin ? "text" : "email"}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 border border-[#DCDCDC] rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all bg-[#F0F0F0] placeholder-gray-400 text-[#323232]"
-                placeholder="Enter your mail"
+                placeholder={isLogin ? "Enter your email or username" : "Enter your mail"}
                 required
               />
             </div>
@@ -224,20 +224,7 @@ export default function AuthPage() {
 
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                <div className="flex items-start">
-                  <span className="mr-2">⚠️</span>
-                  <div>
-                    <p>{error}</p>
-                    {error.includes('invalid-credential') && email.toLowerCase().includes('admin') && (
-                      <p className="text-sm mt-2">
-                        Need to create admin user?{' '}
-                        <a href="/setup" className="underline font-medium">
-                          Click here to set up admin account
-                        </a>
-                      </p>
-                    )}
-                  </div>
-                </div>
+                {error}
               </div>
             )}
 

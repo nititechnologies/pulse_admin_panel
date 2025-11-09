@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '@/components/Layout';
 import { getArticles, deleteArticle, updateArticle, Article } from '@/lib/articles';
-import { Search, Trash2, Eye, Calendar, User, Tag, ChevronDown, Check, FileText, Globe, X, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import { Search, Trash2, Eye, ChevronDown, Check, FileText, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 
 export default function ManageNewsPage() {
@@ -111,8 +111,7 @@ export default function ManageNewsPage() {
             : article
         )
       );
-    } catch (error) {
-      console.error('Error updating article status:', error);
+    } catch {
       alert('Failed to update article status');
     }
   };
@@ -184,7 +183,7 @@ export default function ManageNewsPage() {
           } else {
             bValue = 0;
           }
-        } catch (error) {
+        } catch {
           aValue = 0;
           bValue = 0;
         }

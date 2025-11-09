@@ -23,7 +23,7 @@ interface SidebarProps {
   onToggle: () => void;
 }
 
-export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
+export default function Sidebar({ isOpen }: SidebarProps) {
   const pathname = usePathname();
   const { isAdministrator } = useAuth();
   const [expandedNews, setExpandedNews] = useState(true);
@@ -63,12 +63,9 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     // Only show Manage Users for administrators
     ...(isAdministrator ? [{
       id: 'users',
-      label: 'Manage Users',
+      label: 'Journalists',
       icon: UserCheck,
       path: '/users',
-      submenu: [
-        { label: 'All Users', path: '/users', icon: Users },
-      ],
     }] : []),
     {
       id: 'regions-tags',

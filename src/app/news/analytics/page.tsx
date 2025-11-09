@@ -1,7 +1,7 @@
 'use client';
 
 import Layout from '@/components/Layout';
-import { BarChart3, TrendingUp, Eye, Users, Calendar } from 'lucide-react';
+import { BarChart3, TrendingUp, Eye, Users } from 'lucide-react';
 
 export default function NewsAnalyticsPage() {
   const analyticsData = {

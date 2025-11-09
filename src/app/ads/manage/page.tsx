@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '@/components/Layout';
 import { getAds, updateAd, deleteAd, type Ad } from '@/lib/ads';
-import { Search, Trash2, Eye, Play, Pause, ChevronDown, Check, Megaphone, TrendingUp, MousePointerClick, BarChart3, Calendar, ExternalLink, Plus, X, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import { Search, Trash2, Eye, ChevronDown, Check, Megaphone, TrendingUp, MousePointerClick, BarChart3, Plus, X, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
 import { Timestamp } from 'firebase/firestore';
 
@@ -74,14 +74,6 @@ export default function ManageAdsPage() {
     return Number(((clicks / impressions) * 100).toFixed(2));
   };
 
-  // Format date from Timestamp or string
-  const formatDate = (date: Timestamp | string | undefined): string => {
-    if (!date) return 'N/A';
-    if (date instanceof Timestamp) {
-      return date.toDate().toLocaleDateString();
-    }
-    return new Date(date).toLocaleDateString();
-  };
 
   const filteredCampaigns = ads.filter(ad => {
     const matchesSearch = ad.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -194,16 +186,6 @@ export default function ManageAdsPage() {
     }
   };
 
-  const getStatusIcon = (status: string = 'draft') => {
-    switch (status) {
-      case 'published':
-        return <Play className="w-4 h-4" />;
-      case 'scheduled':
-        return <Pause className="w-4 h-4" />;
-      default:
-        return null;
-    }
-  };
 
   const handleViewCampaign = (ad: Ad) => {
     if (ad.id) {

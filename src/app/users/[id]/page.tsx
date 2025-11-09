@@ -27,6 +27,7 @@ export default function JournalistProfilePage() {
     if (journalistId) {
       fetchJournalist();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [journalistId, isAdministrator, router]);
 
   const fetchJournalist = async () => {
@@ -87,7 +88,7 @@ export default function JournalistProfilePage() {
           <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
             <p className="text-red-800">{error || 'Journalist not found'}</p>
             <Link href="/users" className="mt-4 inline-block text-blue-600 hover:underline">
-              ← Back to Manage Users
+              ← Back to Journalists
             </Link>
           </div>
         </div>
@@ -104,7 +105,7 @@ export default function JournalistProfilePage() {
           className="inline-flex items-center text-sm text-slate-600 hover:text-blue-600 mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Manage Users
+          Back to Journalists
         </Link>
 
         {/* Profile Header */}

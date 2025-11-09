@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Layout from '@/components/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { getJournalists, updateJournalistStatus, Journalist } from '@/lib/journalists';
-import { Search, UserCheck, UserX, Mail, Phone, Calendar, ArrowLeft } from 'lucide-react';
+import { Search, UserCheck, UserX, Mail, Phone, Calendar } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 
 export default function UsersPage() {
@@ -98,7 +98,7 @@ export default function UsersPage() {
   }
 
   return (
-    <Layout title="Manage Users">
+    <Layout title="Journalists">
       <div className="space-y-6 pb-8">
         {/* Header */}
         <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-xl p-6 shadow-lg text-white relative overflow-hidden">
@@ -106,7 +106,7 @@ export default function UsersPage() {
           <div className="relative z-10">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-white mb-2">Manage Journalists</h1>
+                <h1 className="text-2xl font-bold text-white mb-2">Journalists</h1>
                 <p className="text-blue-100 text-sm">Manage journalist accounts and permissions</p>
               </div>
               <div className="flex items-center space-x-6">

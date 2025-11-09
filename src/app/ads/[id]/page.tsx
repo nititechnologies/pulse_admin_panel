@@ -1,16 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Layout from '@/components/Layout';
 import { getAdById, Ad } from '@/lib/ads';
-import { ArrowLeft, Eye, Calendar, MousePointerClick, BarChart3, TrendingUp, ExternalLink, Trash2, Edit2, Megaphone } from 'lucide-react';
+import { ArrowLeft, Eye, MousePointerClick, BarChart3, TrendingUp, ExternalLink, Megaphone } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import Link from 'next/link';
 
 export default function AdDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const adId = params.id as string;
   
   const [ad, setAd] = useState<Ad | null>(null);
@@ -21,6 +20,7 @@ export default function AdDetailPage() {
     if (adId) {
       fetchAd();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adId]);
 
   const fetchAd = async () => {

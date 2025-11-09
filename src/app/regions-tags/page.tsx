@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
-import { Tag, Globe, Plus, X, Edit2, Trash2, Save, Check, ChevronUp, ChevronDown } from 'lucide-react';
+import { Tag, Globe, X, Edit2, Trash2, Check, ChevronUp, ChevronDown } from 'lucide-react';
 import { 
   getTags, 
   addTag, 

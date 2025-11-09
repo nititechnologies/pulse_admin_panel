@@ -1,16 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Layout from '@/components/Layout';
 import { getArticleById, Article } from '@/lib/articles';
-import { ArrowLeft, Eye, Calendar, User, Tag, Globe, Heart, ThumbsDown, Bookmark, Youtube, Trash2, Edit2 } from 'lucide-react';
+import { ArrowLeft, Eye, Calendar, User, Tag, Globe, Heart, ThumbsDown, Bookmark } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import Link from 'next/link';
 
 export default function NewsDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const articleId = params.id as string;
   
   const [article, setArticle] = useState<Article | null>(null);
@@ -21,6 +20,7 @@ export default function NewsDetailPage() {
     if (articleId) {
       fetchArticle();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [articleId]);
 
   const fetchArticle = async () => {

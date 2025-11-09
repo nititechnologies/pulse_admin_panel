@@ -6,7 +6,7 @@ import RichTextEditor from '@/components/RichTextEditor';
 import { addArticle, type Article } from '@/lib/articles';
 import { getTags, getRegions, type Tag as TagType, type Region as RegionType } from '@/lib/tagsAndRegions';
 import { useAuth } from '@/contexts/AuthContext';
-import { Upload, Image, Save, Plus, X, Globe, Tag, Check, FileText, Calendar, Clock, Bookmark, Share2, Filter, Menu, User, Youtube, Link as LinkIcon } from 'lucide-react';
+import { Upload, Image, Save, Plus, X, Globe, Tag, Check, FileText, Calendar, Clock, Youtube, Link as LinkIcon } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import { uploadImage } from '@/lib/storage';
 
@@ -250,13 +250,13 @@ export default function UploadNewsPage() {
       // Validate image if provided
       if (hasImage) {
         if (imageUploadMethod === 'url') {
-          if (!formData.imageUrl.trim()) {
-            newErrors.imageUrl = 'Image URL is required';
-          } else {
-            try {
-              new URL(formData.imageUrl);
-            } catch {
-              newErrors.imageUrl = 'Please enter a valid URL';
+    if (!formData.imageUrl.trim()) {
+      newErrors.imageUrl = 'Image URL is required';
+    } else {
+      try {
+        new URL(formData.imageUrl);
+      } catch {
+        newErrors.imageUrl = 'Please enter a valid URL';
             }
           }
         } else {
@@ -334,7 +334,16 @@ export default function UploadNewsPage() {
                            'Anonymous';
       
       // Build article data, only including fields that have values
-      const articleData: any = {
+      type ArticleInput = Omit<Article, 'id' | 'createdAt' | 'updatedAt'>;
+      const articleData: Partial<ArticleInput> & {
+        title: string;
+        summary: string;
+        content: string;
+        journalistName: string;
+        regions: string[];
+        tags: string[];
+        publishedAt: string;
+      } = {
         title: formData.title.trim(),
         summary: formData.summary.trim(),
         content: formData.content.trim(),
@@ -606,12 +615,12 @@ export default function UploadNewsPage() {
               {/* URL Input */}
               {imageUploadMethod === 'url' && (
                 <div className="space-y-2">
-                  <input
-                    type="url"
-                    id="imageUrl"
-                    name="imageUrl"
-                    value={formData.imageUrl}
-                    onChange={handleInputChange}
+              <input
+                type="url"
+                id="imageUrl"
+                name="imageUrl"
+                value={formData.imageUrl}
+                onChange={handleInputChange}
                     className={`w-full px-3 sm:px-4 py-2.5 sm:py-3.5 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm sm:text-base text-slate-800 bg-white overflow-x-hidden ${
                       errors.imageUrl ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-slate-200'
                     }`}
@@ -626,17 +635,17 @@ export default function UploadNewsPage() {
                   )}
                   {formData.imageUrl && !errors.imageUrl && (
                     <div className="mt-3">
-                      <img
-                        src={formData.imageUrl}
+                        <img
+                          src={formData.imageUrl}
                         alt="Preview"
                         className="max-w-full h-48 object-cover rounded-xl border border-slate-200"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
                   )}
-                </div>
+                    </div>
               )}
 
               {/* File Upload */}

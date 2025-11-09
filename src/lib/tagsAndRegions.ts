@@ -119,7 +119,7 @@ export const addRegion = async (name: string, priority: number = 0): Promise<str
 export const updateRegion = async (id: string, name: string, priority?: number): Promise<void> => {
   try {
     const regionRef = doc(db, 'regions', id);
-    const updateData: any = {
+    const updateData: { name: string; updatedAt: Timestamp; priority?: number } = {
       name: name.trim(),
       updatedAt: Timestamp.now(),
     };
