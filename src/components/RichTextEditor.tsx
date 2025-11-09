@@ -21,7 +21,7 @@ export default function RichTextEditor({
   return (
     <div className={`rich-text-editor ${className}`}>
       <Editor
-        apiKey="drzkdb44jbaxc6lz5h2edvqk4uzh2i2gkssmoxogq9ip67tf"
+        apiKey="30f10zj6hcrjizc04w3j3b8j5mgg11ks3kq0r50wqd580024"
         onInit={(evt, editor) => editorRef.current = editor}
         value={value}
         onEditorChange={(content) => onChange(content)}
