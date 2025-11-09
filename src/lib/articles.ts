@@ -2,6 +2,7 @@ import {
   collection, 
   addDoc, 
   getDocs, 
+  getDoc,
   doc, 
   updateDoc, 
   deleteDoc, 
@@ -22,7 +23,8 @@ export interface Article {
   region?: string; // Optional, kept for backward compatibility
   regions?: string[]; // New field for multiple regions
   source?: string; // Optional
-  imageUrl: string;
+  imageUrl?: string; // Optional - either image or video is required
+  youtubeVideoUrl?: string; // Optional YouTube video URL
   readTime?: number; // Optional
   tags: string[];
   publishedAt: string;
@@ -32,6 +34,8 @@ export interface Article {
   scheduledAt?: Timestamp;
   views?: number;
   likes?: number;
+  dislikes?: number;
+  bookmarkCount?: number;
 }
 
 // Add a new article to Firestore
@@ -166,15 +170,14 @@ export const deleteArticle = async (id: string): Promise<void> => {
 // Get article by ID
 export const getArticleById = async (id: string): Promise<Article | null> => {
   try {
-    const q = query(collection(db, 'articles'), where('__name__', '==', id));
-    const querySnapshot = await getDocs(q);
-    if (querySnapshot.empty) {
+    const articleRef = doc(db, 'articles', id);
+    const articleDoc = await getDoc(articleRef);
+    if (!articleDoc.exists()) {
       return null;
     }
-    const doc = querySnapshot.docs[0];
     return {
-      id: doc.id,
-      ...doc.data()
+      id: articleDoc.id,
+      ...articleDoc.data()
     } as Article;
   } catch (error) {
     console.error('Error getting article by ID:', error);

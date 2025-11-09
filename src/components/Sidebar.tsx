@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   Home, 
   Newspaper, 
@@ -24,6 +25,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const pathname = usePathname();
+  const { isAdministrator } = useAuth();
   const [expandedNews, setExpandedNews] = useState(true);
   const [expandedAds, setExpandedAds] = useState(true);
   const [expandedUsers, setExpandedUsers] = useState(true);
@@ -58,7 +60,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         { label: 'Manage Ads', path: '/ads/manage', icon: Settings },
       ],
     },
-    {
+    // Only show Manage Users for administrators
+    ...(isAdministrator ? [{
       id: 'users',
       label: 'Manage Users',
       icon: UserCheck,
@@ -66,7 +69,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       submenu: [
         { label: 'All Users', path: '/users', icon: Users },
       ],
-    },
+    }] : []),
     {
       id: 'regions-tags',
       label: 'Regions & Tags',

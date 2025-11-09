@@ -21,6 +21,7 @@ export interface Tag {
 export interface Region {
   id?: string;
   name: string;
+  priority?: number;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }
@@ -79,22 +80,32 @@ export const deleteTag = async (id: string): Promise<void> => {
 // Regions Functions
 export const getRegions = async (): Promise<Region[]> => {
   try {
-    const q = query(collection(db, 'regions'), orderBy('name', 'asc'));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
+    const querySnapshot = await getDocs(collection(db, 'regions'));
+    const regions = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     })) as Region[];
+    
+    // Sort by priority (ascending, lower priority first), then by name
+    return regions.sort((a, b) => {
+      const priorityA = a.priority ?? 0;
+      const priorityB = b.priority ?? 0;
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB; // Lower priority first (0, 1, 2, ...)
+      }
+      return (a.name || '').localeCompare(b.name || '');
+    });
   } catch (error) {
     console.error('Error getting regions:', error);
     throw error;
   }
 };
 
-export const addRegion = async (name: string): Promise<string> => {
+export const addRegion = async (name: string, priority: number = 0): Promise<string> => {
   try {
     const docRef = await addDoc(collection(db, 'regions'), {
       name: name.trim(),
+      priority: priority,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     });
@@ -105,13 +116,17 @@ export const addRegion = async (name: string): Promise<string> => {
   }
 };
 
-export const updateRegion = async (id: string, name: string): Promise<void> => {
+export const updateRegion = async (id: string, name: string, priority?: number): Promise<void> => {
   try {
     const regionRef = doc(db, 'regions', id);
-    await updateDoc(regionRef, {
+    const updateData: any = {
       name: name.trim(),
       updatedAt: Timestamp.now(),
-    });
+    };
+    if (priority !== undefined) {
+      updateData.priority = priority;
+    }
+    await updateDoc(regionRef, updateData);
   } catch (error) {
     console.error('Error updating region:', error);
     throw error;

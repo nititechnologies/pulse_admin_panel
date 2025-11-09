@@ -2,6 +2,7 @@ import {
   collection, 
   addDoc, 
   getDocs, 
+  getDoc,
   doc, 
   updateDoc, 
   deleteDoc, 
@@ -117,6 +118,24 @@ export const deleteAd = async (id: string): Promise<void> => {
     await deleteDoc(doc(db, 'ads', id));
   } catch (error) {
     console.error('Error deleting ad:', error);
+    throw error;
+  }
+};
+
+// Get ad by ID
+export const getAdById = async (id: string): Promise<Ad | null> => {
+  try {
+    const adRef = doc(db, 'ads', id);
+    const adDoc = await getDoc(adRef);
+    if (!adDoc.exists()) {
+      return null;
+    }
+    return {
+      id: adDoc.id,
+      ...adDoc.data()
+    } as Ad;
+  } catch (error) {
+    console.error('Error getting ad by ID:', error);
     throw error;
   }
 };

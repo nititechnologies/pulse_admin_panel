@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
-import { Tag, Globe, Plus, X, Edit2, Trash2, Save, Check } from 'lucide-react';
+import { Tag, Globe, Plus, X, Edit2, Trash2, Save, Check, ChevronUp, ChevronDown } from 'lucide-react';
 import { 
   getTags, 
   addTag, 
@@ -105,7 +105,9 @@ export default function RegionsTagsPage() {
     
     setIsAddingRegion(true);
     try {
-      await addRegion(newRegionName);
+      // New regions are added at the end (priority = regions.length, so first is 0, second is 1, etc.)
+      const newPriority = regions.length;
+      await addRegion(newRegionName, newPriority);
       setNewRegionName('');
       await loadData();
     } catch (error) {
@@ -124,12 +126,58 @@ export default function RegionsTagsPage() {
     if (!editingRegionName.trim()) return;
     
     try {
-      await updateRegion(id, editingRegionName);
+      // Keep the same priority when just editing the name
+      const region = regions.find(r => r.id === id);
+      const currentPriority = region?.priority ?? regions.length;
+      await updateRegion(id, editingRegionName, currentPriority);
       setEditingRegionId(null);
       setEditingRegionName('');
       await loadData();
     } catch (error) {
       console.error('Error updating region:', error);
+    }
+  };
+
+  const handleMoveRegion = async (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index === 0) return; // Already at top
+    if (direction === 'down' && index === regions.length - 1) return; // Already at bottom
+
+    const swapIndex = direction === 'up' ? index - 1 : index + 1;
+    const region = regions[index];
+    const swapRegion = regions[swapIndex];
+
+    // Calculate new priorities based on position
+    // Priority = index (so index 0 = priority 0, index 1 = priority 1, etc.)
+    const newPriorityForRegion = swapIndex; // Region moves to swapIndex position
+    const newPriorityForSwap = index; // SwapRegion moves to index position
+
+    // Optimistically update local state for instant visual feedback
+    const newRegions = [...regions];
+    newRegions[index] = { ...region, priority: newPriorityForRegion };
+    newRegions[swapIndex] = { ...swapRegion, priority: newPriorityForSwap };
+    // Re-sort the array by priority (ascending)
+    newRegions.sort((a, b) => {
+      const priorityA = a.priority ?? 0;
+      const priorityB = b.priority ?? 0;
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB; // Lower priority first (0, 1, 2, ...)
+      }
+      return (a.name || '').localeCompare(b.name || '');
+    });
+    setRegions(newRegions);
+
+    try {
+      // Update both regions with new priorities in the database
+      await Promise.all([
+        updateRegion(region.id!, region.name, newPriorityForRegion),
+        updateRegion(swapRegion.id!, swapRegion.name, newPriorityForSwap)
+      ]);
+      // Reload to ensure consistency
+      await loadData();
+    } catch (error) {
+      console.error('Error moving region:', error);
+      // Revert on error
+      await loadData();
     }
   };
 
@@ -336,7 +384,7 @@ export default function RegionsTagsPage() {
 
               {/* Regions List */}
               <div className="flex flex-wrap gap-2">
-                {regions.map((region) => (
+                {regions.map((region, index) => (
                   <div
                     key={region.id}
                     className="px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
@@ -378,6 +426,32 @@ export default function RegionsTagsPage() {
                       </>
                     ) : (
                       <>
+                        <div className="flex flex-col gap-0.5">
+                          <button
+                            onClick={() => handleMoveRegion(index, 'up')}
+                            disabled={index === 0}
+                            className={`p-0.5 rounded transition-colors ${
+                              index === 0 
+                                ? 'opacity-30 cursor-not-allowed' 
+                                : 'hover:bg-white/20'
+                            }`}
+                            title="Move up"
+                          >
+                            <ChevronUp className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => handleMoveRegion(index, 'down')}
+                            disabled={index === regions.length - 1}
+                            className={`p-0.5 rounded transition-colors ${
+                              index === regions.length - 1 
+                                ? 'opacity-30 cursor-not-allowed' 
+                                : 'hover:bg-white/20'
+                            }`}
+                            title="Move down"
+                          >
+                            <ChevronDown className="w-3 h-3" />
+                          </button>
+                        </div>
                         <span className="text-sm font-medium">{region.name}</span>
                         <button
                           onClick={() => handleEditRegion(region)}

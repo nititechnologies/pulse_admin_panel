@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Layout from '@/components/Layout';
 import RichTextEditor from '@/components/RichTextEditor';
 import { addArticle, type Article } from '@/lib/articles';
 import { getTags, getRegions, type Tag as TagType, type Region as RegionType } from '@/lib/tagsAndRegions';
 import { useAuth } from '@/contexts/AuthContext';
-import { Upload, Image, Save, Plus, X, Globe, Tag, Check, FileText, Calendar, Clock } from 'lucide-react';
+import { Upload, Image, Save, Plus, X, Globe, Tag, Check, FileText, Calendar, Clock, Bookmark, Share2, Filter, Menu, User, Youtube, Link as LinkIcon } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
+import { uploadImage } from '@/lib/storage';
 
 export default function UploadNewsPage() {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ export default function UploadNewsPage() {
     summary: '',
     content: '',
     imageUrl: '',
+    youtubeVideoUrl: '',
     tags: [] as string[],
     regions: [] as string[],
     publishedAt: new Date().toISOString(),
@@ -33,6 +35,13 @@ export default function UploadNewsPage() {
     date.setMinutes(0);
     return date.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:mm
   });
+
+  // Image upload state
+  const [imageUploadMethod, setImageUploadMethod] = useState<'url' | 'upload'>('url');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const imageFileInputRef = useRef<HTMLInputElement>(null);
 
   // Tags and Regions from Firebase
   const [availableTags, setAvailableTags] = useState<TagType[]>([]);
@@ -118,6 +127,53 @@ export default function UploadNewsPage() {
     }
   };
 
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setErrors(prev => ({ ...prev, imageUrl: 'Please select a valid image file' }));
+        return;
+      }
+      
+      // Validate file size (max 1MB)
+      if (file.size > 1 * 1024 * 1024) {
+        setErrors(prev => ({ ...prev, imageUrl: 'Image size must be 1MB or less' }));
+        return;
+      }
+      
+      setImageFile(file);
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.imageUrl;
+        return newErrors;
+      });
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageMethodChange = (method: 'url' | 'upload') => {
+    setImageUploadMethod(method);
+    setImageFile(null);
+    setImagePreview(null);
+    setFormData(prev => ({ ...prev, imageUrl: '' }));
+    if (imageFileInputRef.current) {
+      imageFileInputRef.current.value = '';
+    }
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors.imageUrl;
+      return newErrors;
+    });
+  };
+
+  // Add tag
   const addSuggestedTag = (tag: string) => {
     if (!formData.tags.includes(tag)) {
       setFormData(prev => ({
@@ -127,12 +183,13 @@ export default function UploadNewsPage() {
     }
   };
 
+  // Add region
   const addRegion = (region: string) => {
     if (!formData.regions.includes(region)) {
-    setFormData(prev => ({
-      ...prev,
+      setFormData(prev => ({
+        ...prev,
         regions: [...prev.regions, region]
-    }));
+      }));
     }
   };
 
@@ -149,6 +206,7 @@ export default function UploadNewsPage() {
       regions: prev.regions.filter(region => region !== regionToRemove)
     }));
   };
+
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -179,13 +237,42 @@ export default function UploadNewsPage() {
       newErrors.regions = 'Please select at least one region';
     }
     
-    if (!formData.imageUrl.trim()) {
-      newErrors.imageUrl = 'Image URL is required';
+    // Validate that either image OR video is provided
+    const hasImage = imageUploadMethod === 'url' 
+      ? formData.imageUrl.trim() 
+      : imageFile !== null;
+    const hasVideo = formData.youtubeVideoUrl.trim() !== '';
+    
+    if (!hasImage && !hasVideo) {
+      newErrors.imageUrl = 'Either an image or a YouTube video URL is required';
+      newErrors.youtubeVideoUrl = 'Either an image or a YouTube video URL is required';
     } else {
-      try {
-        new URL(formData.imageUrl);
-      } catch {
-        newErrors.imageUrl = 'Please enter a valid URL';
+      // Validate image if provided
+      if (hasImage) {
+        if (imageUploadMethod === 'url') {
+          if (!formData.imageUrl.trim()) {
+            newErrors.imageUrl = 'Image URL is required';
+          } else {
+            try {
+              new URL(formData.imageUrl);
+            } catch {
+              newErrors.imageUrl = 'Please enter a valid URL';
+            }
+          }
+        } else {
+          if (!imageFile) {
+            newErrors.imageUrl = 'Please select an image file to upload';
+          }
+        }
+      }
+      
+      // Validate video URL if provided
+      if (hasVideo) {
+        try {
+          new URL(formData.youtubeVideoUrl);
+        } catch {
+          newErrors.youtubeVideoUrl = 'Please enter a valid YouTube URL';
+        }
       }
     }
     
@@ -220,22 +307,53 @@ export default function UploadNewsPage() {
     setShowSuccess(false);
     
     try {
+      let imageUrl = '';
+      
+      // Upload image file if using file upload
+      if (imageUploadMethod === 'upload' && imageFile) {
+        setIsUploadingImage(true);
+        try {
+          imageUrl = await uploadImage(imageFile, `articles/${Date.now()}_${imageFile.name}`);
+          console.log('Image uploaded successfully:', imageUrl);
+        } catch (uploadError) {
+          console.error('Error uploading image:', uploadError);
+          setErrors({ submit: 'Failed to upload image. Please try again.' });
+          setIsUploadingImage(false);
+          setIsSubmitting(false);
+          return;
+        } finally {
+          setIsUploadingImage(false);
+        }
+      } else if (imageUploadMethod === 'url') {
+        imageUrl = formData.imageUrl.trim();
+      }
       
       // Get journalist name from user account
       const journalistName = user?.displayName || 
                            user?.email?.split('@')[0] || 
                            'Anonymous';
       
-      const articleData: Omit<Article, 'id' | 'createdAt' | 'updatedAt'> = {
+      // Build article data, only including fields that have values
+      const articleData: any = {
         title: formData.title.trim(),
         summary: formData.summary.trim(),
         content: formData.content.trim(),
         journalistName: journalistName,
         regions: formData.regions.length > 0 ? formData.regions : [],
-        imageUrl: formData.imageUrl.trim(),
         tags: formData.tags,
         publishedAt: new Date(formData.publishedAt).toISOString(),
       };
+
+      // Only add imageUrl if it has a value (Firebase doesn't allow undefined)
+      if (imageUrl && imageUrl.trim()) {
+        articleData.imageUrl = imageUrl.trim();
+      }
+
+      // Only add youtubeVideoUrl if it has a value
+      const videoUrl = formData.youtubeVideoUrl.trim();
+      if (videoUrl) {
+        articleData.youtubeVideoUrl = videoUrl;
+      }
 
       // Add scheduledAt if scheduling is enabled
       if (isScheduled && scheduledDateTime) {
@@ -266,10 +384,18 @@ export default function UploadNewsPage() {
         summary: '',
         content: '',
         imageUrl: '',
+        youtubeVideoUrl: '',
         tags: [],
         regions: [],
         publishedAt: new Date().toISOString(),
       });
+      
+      setImageFile(null);
+      setImagePreview(null);
+      setImageUploadMethod('url');
+      if (imageFileInputRef.current) {
+        imageFileInputRef.current.value = '';
+      }
       
       setErrors({});
       setShowSuccess(true);
@@ -290,10 +416,10 @@ export default function UploadNewsPage() {
   return (
     <Layout title="Create Article">
       <div className="max-w-7xl mx-auto pb-8 px-4 sm:px-6 overflow-x-hidden">
-        {/* Form and Preview Layout */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-0">
+        {/* Form Layout */}
+        <div className="max-w-4xl mx-auto">
           {/* Form Section */}
-          <div className="xl:col-span-2 space-y-4 lg:space-y-6 xl:pr-6">
+          <div className="space-y-4 lg:space-y-6">
             <div className="space-y-4 lg:space-y-6">
             {/* Success Message */}
             {showSuccess && (
@@ -351,10 +477,15 @@ export default function UploadNewsPage() {
               <button 
                 type="submit"
                 form="article-form"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isUploadingImage}
                       className="w-full sm:w-auto px-4 sm:px-5 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg flex items-center justify-center text-sm"
               >
-                {isSubmitting ? (
+                {isUploadingImage ? (
+                  <>
+                          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin inline mr-2"></div>
+                          Uploading...
+                  </>
+                ) : isSubmitting ? (
                   <>
                           <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin inline mr-2"></div>
                           {isScheduled ? 'Scheduling...' : 'Publishing...'}
@@ -437,18 +568,50 @@ export default function UploadNewsPage() {
                   )}
             </div>
 
-            {/* Image URL */}
-            <div className="space-y-2">
-                  <label htmlFor="imageUrl" className="block text-sm font-semibold text-slate-800 flex items-center">
+            {/* Image Input */}
+            <div className="space-y-3">
+                  <label className="block text-sm font-semibold text-slate-800 flex items-center">
                     <Image className="w-4 h-4 mr-2 text-blue-600" />
-                Featured Image URL *
+                Featured Image (Required if no video)
               </label>
-              <input
-                type="url"
-                id="imageUrl"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleInputChange}
+              
+              {/* Method Toggle */}
+              <div className="flex gap-2 p-1 bg-slate-100 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => handleImageMethodChange('url')}
+                  className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center justify-center ${
+                    imageUploadMethod === 'url'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-slate-600 hover:text-slate-800'
+                  }`}
+                >
+                  <LinkIcon className="w-4 h-4 mr-1.5" />
+                  URL
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleImageMethodChange('upload')}
+                  className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center justify-center ${
+                    imageUploadMethod === 'upload'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-slate-600 hover:text-slate-800'
+                  }`}
+                >
+                  <Upload className="w-4 h-4 mr-1.5" />
+                  Upload (Max 1MB)
+                </button>
+              </div>
+
+              {/* URL Input */}
+              {imageUploadMethod === 'url' && (
+                <div className="space-y-2">
+                  <input
+                    type="url"
+                    id="imageUrl"
+                    name="imageUrl"
+                    value={formData.imageUrl}
+                    onChange={handleInputChange}
                     className={`w-full px-3 sm:px-4 py-2.5 sm:py-3.5 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm sm:text-base text-slate-800 bg-white overflow-x-hidden ${
                       errors.imageUrl ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-slate-200'
                     }`}
@@ -463,15 +626,95 @@ export default function UploadNewsPage() {
                   )}
                   {formData.imageUrl && !errors.imageUrl && (
                     <div className="mt-3">
-                        <img
-                          src={formData.imageUrl}
+                      <img
+                        src={formData.imageUrl}
                         alt="Preview"
                         className="max-w-full h-48 object-cover rounded-xl border border-slate-200"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      </div>
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* File Upload */}
+              {imageUploadMethod === 'upload' && (
+                <div className="space-y-2">
+                  <input
+                    ref={imageFileInputRef}
+                    type="file"
+                    id="imageFile"
+                    accept="image/*"
+                    onChange={handleImageFileChange}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="imageFile"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
+                  >
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Upload className="w-8 h-8 mb-2 text-slate-400" />
+                      <p className="mb-2 text-sm text-slate-500">
+                        <span className="font-semibold">Click to upload</span> or drag and drop
+                      </p>
+                      <p className="text-xs text-slate-400">PNG, JPG, GIF up to 1MB</p>
+                    </div>
+                  </label>
+                  {imagePreview && (
+                    <div className="mt-3">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="max-w-full h-48 object-cover rounded-xl border border-slate-200"
+                      />
+                    </div>
+                  )}
+                  {imageFile && (
+                    <p className="text-xs text-slate-600 mt-2">
+                      Selected: {imageFile.name} ({(imageFile.size / 1024).toFixed(2)} KB)
+                    </p>
+                  )}
+                  {errors.imageUrl && (
+                    <p className="text-sm text-red-600 flex items-center mt-1">
+                      <X className="w-3 h-3 mr-1" />
+                      {errors.imageUrl}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* YouTube Video URL */}
+            <div className="space-y-2">
+                  <label htmlFor="youtubeVideoUrl" className="block text-sm font-semibold text-slate-800 flex items-center">
+                    <Youtube className="w-4 h-4 mr-2 text-red-600" />
+                YouTube Video URL (Required if no image)
+              </label>
+              <input
+                type="url"
+                id="youtubeVideoUrl"
+                name="youtubeVideoUrl"
+                value={formData.youtubeVideoUrl}
+                onChange={handleInputChange}
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3.5 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm sm:text-base text-slate-800 bg-white overflow-x-hidden ${
+                      errors.youtubeVideoUrl ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-slate-200'
+                    }`}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                  />
+                  {errors.youtubeVideoUrl && (
+                    <p className="text-sm text-red-600 flex items-center mt-1">
+                      <X className="w-3 h-3 mr-1" />
+                      {errors.youtubeVideoUrl}
+                    </p>
+                  )}
+                  {formData.youtubeVideoUrl && !errors.youtubeVideoUrl && (
+                    <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-2">YouTube video will be embedded in the article</p>
+                      <p className="text-xs text-slate-500 break-all">{formData.youtubeVideoUrl}</p>
+                    </div>
                   )}
                     </div>
                       </div>
@@ -543,6 +786,7 @@ export default function UploadNewsPage() {
                         </span>
                       )}
                     </h4>
+                    
                   <div className="flex flex-wrap gap-2">
                       {loadingTags ? (
                         <div className="flex items-center text-sm text-slate-500">
@@ -609,6 +853,7 @@ export default function UploadNewsPage() {
                       )}
                       <span className="ml-2 text-xs font-normal text-slate-500">(Where to show)</span>
                     </h4>
+                    
                   <div className="flex flex-wrap gap-2">
                       {loadingTags ? (
                         <div className="flex items-center text-sm text-slate-500">
@@ -665,148 +910,6 @@ export default function UploadNewsPage() {
             </div>
           </form>
         </div>
-            </div>
-          </div>
-
-          {/* Phone Mockup Preview - Hidden on mobile/tablet */}
-          <div className="hidden xl:block lg:col-span-1">
-            <div className="fixed overflow-x-hidden" style={{ 
-              top: '64px', 
-              height: 'calc(100vh - 64px)', 
-              width: 'calc(33.333% - 1.5rem)', 
-              right: '1.5rem', 
-              maxWidth: '420px', 
-              zIndex: 10,
-              overflowX: 'hidden'
-            }}>
-              <div className="h-full flex flex-col items-center justify-center">
-                {/* Phone Frame */}
-                <div className="relative mx-auto flex-1 flex items-center justify-center min-h-0 w-full" style={{ width: '360px', maxWidth: '100%' }}>
-                  {/* Phone Bezel - Outer Frame */}
-                  <div className="bg-gradient-to-b from-slate-800 via-slate-900 to-slate-800 rounded-[3rem] p-3 shadow-2xl w-full h-full flex items-center justify-center relative">
-                    {/* Side Buttons */}
-                    <div className="absolute left-0 top-1/4 w-1 h-16 bg-slate-700 rounded-l-full"></div>
-                    <div className="absolute left-0 top-2/4 w-1 h-20 bg-slate-700 rounded-l-full mt-4"></div>
-                    <div className="absolute right-0 top-1/3 w-1 h-12 bg-slate-700 rounded-r-full"></div>
-                    
-                    {/* Screen Container */}
-                    <div className="bg-black rounded-[2.5rem] p-1 w-full h-full flex items-center justify-center relative">
-                      {/* Notch */}
-                      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-2xl z-20"></div>
-                      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-28 h-5 bg-black rounded-b-xl z-30"></div>
-                      {/* Camera/Speaker */}
-                      <div className="absolute top-1 left-1/2 transform -translate-x-1/2 w-16 h-3 bg-slate-800 rounded-full z-40 flex items-center justify-center gap-1">
-                        <div className="w-1 h-1 bg-slate-600 rounded-full"></div>
-                        <div className="w-8 h-2 bg-slate-700 rounded-full"></div>
-                        <div className="w-1 h-1 bg-slate-600 rounded-full"></div>
-        </div>
-
-                      {/* Screen */}
-                      <div className="bg-white rounded-[2.25rem] overflow-hidden w-full h-full flex flex-col relative" style={{ maxHeight: '100%', overflowX: 'hidden' }}>
-                        {/* Status Bar with Safe Area */}
-                        <div className="bg-white pt-6 px-4 pb-2 flex items-center justify-between text-xs font-semibold text-slate-900 flex-shrink-0">
-                          <span>9:41</span>
-                          <div className="flex items-center gap-1">
-                            <div className="flex gap-0.5">
-                              <div className="w-1 h-1.5 bg-slate-900 rounded-full"></div>
-                              <div className="w-1 h-2 bg-slate-900 rounded-full"></div>
-                              <div className="w-1 h-2.5 bg-slate-900 rounded-full"></div>
-                              <div className="w-1 h-1.5 bg-slate-400 rounded-full"></div>
-                            </div>
-                            <div className="w-6 h-3 border-2 border-slate-900 rounded-sm relative">
-                              <div className="absolute inset-0.5 bg-slate-900 rounded-sm" style={{ width: '60%' }}></div>
-                            </div>
-                            <div className="w-1 h-1 bg-slate-900 rounded-full"></div>
-                          </div>
-                  </div>
-                        
-                        {/* Scrollable Content */}
-                        <div className="flex-1 overflow-y-auto overflow-x-hidden bg-white scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent" style={{ minHeight: 0 }}>
-                        {/* Featured Image */}
-                        {formData.imageUrl ? (
-                          <div className="w-full h-48 bg-slate-200 overflow-hidden">
-                      <img
-                        src={formData.imageUrl}
-                        alt="Article preview"
-                              className="w-full h-full object-cover"
-                        onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                        ) : (
-                          <div className="w-full h-48 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                            <Image className="w-8 h-8 text-slate-400" />
-                    </div>
-                  )}
-                        
-                        {/* Article Content */}
-                        <div className="p-4 overflow-x-hidden">
-                          <h2 className="text-lg font-bold text-gray-900 mb-3 leading-tight break-words overflow-wrap-anywhere">
-                            {formData.title || 'Article Title'}
-                          </h2>
-                          
-                          {formData.summary && (
-                            <p className="text-sm text-gray-600 leading-relaxed mb-4 break-words overflow-wrap-anywhere">{formData.summary}</p>
-                          )}
-                          
-                          {/* Meta Info */}
-                          <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 pt-3 border-t border-gray-200 mb-3 break-words">
-                            {formData.regions.length > 0 && (
-                              <div className="flex items-center gap-1.5 break-words">
-                                <Globe className="w-3 h-3 text-blue-600 flex-shrink-0" />
-                                <span className="text-xs break-words overflow-wrap-anywhere">{formData.regions[0]}</span>
-                                {formData.regions.length > 1 && (
-                                  <span className="text-xs">+{formData.regions.length - 1}</span>
-                  )}
-                </div>
-                            )}
-                            <span className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3 text-blue-600" />
-                              {new Date(formData.publishedAt).toLocaleDateString('en-US', { 
-                                month: 'short', 
-                                day: 'numeric' 
-                              })}
-                            </span>
-              </div>
-              
-              {/* Tags */}
-              {formData.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 mb-4">
-                              {formData.tags.slice(0, 3).map((tag, index) => (
-                      <span
-                        key={index}
-                                  className="px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs font-medium break-words overflow-wrap-anywhere"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                              {formData.tags.length > 3 && (
-                                <span className="px-2 py-1 text-slate-500 text-xs">+{formData.tags.length - 3}</span>
-                              )}
-                </div>
-              )}
-              
-                          {/* Content Preview */}
-              {formData.content && (
-                            <div className="pt-3 border-t border-gray-200 overflow-x-hidden">
-                    <div 
-                                className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 prose-strong:text-gray-900 break-words overflow-wrap-anywhere"
-                                style={{ fontSize: '14px', wordBreak: 'break-word', overflowWrap: 'anywhere' }}
-                      dangerouslySetInnerHTML={{ __html: formData.content }}
-                    />
-                  </div>
-              )}
-            </div>
-          </div>
-                        
-                        {/* Home Indicator */}
-                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-slate-900 rounded-full z-30"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>

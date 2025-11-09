@@ -246,10 +246,10 @@ export default function CreateAdPage() {
   return (
     <Layout title="Create Ad">
       <div className="max-w-7xl mx-auto pb-8 px-4 sm:px-6 overflow-x-hidden">
-        {/* Form and Preview Layout */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-0">
+        {/* Form Layout */}
+        <div className="max-w-4xl mx-auto">
           {/* Form Section */}
-          <div className="xl:col-span-2 space-y-4 lg:space-y-6 xl:pr-6">
+          <div className="space-y-4 lg:space-y-6">
             <div className="space-y-4 lg:space-y-6">
               {/* Success Message */}
               {showSuccess && (
@@ -539,127 +539,8 @@ export default function CreateAdPage() {
                 </form>
               </div>
             </div>
+          </div>
         </div>
-
-          {/* Phone Mockup Preview - Hidden on mobile/tablet */}
-          <div className="hidden xl:block lg:col-span-1">
-            <div className="fixed overflow-x-hidden" style={{ 
-              top: '64px', 
-              height: 'calc(100vh - 64px)', 
-              width: 'calc(33.333% - 1.5rem)', 
-              right: '1.5rem', 
-              maxWidth: '420px', 
-              zIndex: 10,
-              overflowX: 'hidden'
-            }}>
-              <div className="h-full flex flex-col items-center justify-center">
-                {/* Phone Frame */}
-                <div className="relative mx-auto flex-1 flex items-center justify-center min-h-0 w-full" style={{ width: '360px', maxWidth: '100%' }}>
-                  {/* Phone Bezel - Outer Frame */}
-                  <div className="bg-gradient-to-b from-slate-800 via-slate-900 to-slate-800 rounded-[3rem] p-3 shadow-2xl w-full h-full flex items-center justify-center relative">
-                    {/* Side Buttons */}
-                    <div className="absolute left-0 top-1/4 w-1 h-16 bg-slate-700 rounded-l-full"></div>
-                    <div className="absolute left-0 top-2/4 w-1 h-20 bg-slate-700 rounded-l-full mt-4"></div>
-                    <div className="absolute right-0 top-1/3 w-1 h-12 bg-slate-700 rounded-r-full"></div>
-                    
-                    {/* Screen Container */}
-                    <div className="bg-black rounded-[2.5rem] p-1 w-full h-full flex items-center justify-center relative">
-                      {/* Notch */}
-                      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-2xl z-20"></div>
-                      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-28 h-5 bg-black rounded-b-xl z-30"></div>
-                      {/* Camera/Speaker */}
-                      <div className="absolute top-1 left-1/2 transform -translate-x-1/2 w-16 h-3 bg-slate-800 rounded-full z-40 flex items-center justify-center gap-1">
-                        <div className="w-1 h-1 bg-slate-600 rounded-full"></div>
-                        <div className="w-8 h-2 bg-slate-700 rounded-full"></div>
-                        <div className="w-1 h-1 bg-slate-600 rounded-full"></div>
-                      </div>
-                      
-                      {/* Screen */}
-                      <div className="bg-white rounded-[2.25rem] overflow-hidden w-full h-full flex flex-col relative" style={{ maxHeight: '100%', overflowX: 'hidden' }}>
-                        {/* Status Bar with Safe Area */}
-                        <div className="bg-white pt-6 px-4 pb-2 flex items-center justify-between text-xs font-semibold text-slate-900 flex-shrink-0">
-                          <span>9:41</span>
-                          <div className="flex items-center gap-1">
-                            <div className="flex gap-0.5">
-                              <div className="w-1 h-1.5 bg-slate-900 rounded-full"></div>
-                              <div className="w-1 h-2 bg-slate-900 rounded-full"></div>
-                              <div className="w-1 h-2.5 bg-slate-900 rounded-full"></div>
-                              <div className="w-1 h-1.5 bg-slate-400 rounded-full"></div>
-                            </div>
-                            <div className="w-6 h-3 border-2 border-slate-900 rounded-sm relative">
-                              <div className="absolute inset-0.5 bg-slate-900 rounded-sm" style={{ width: '60%' }}></div>
-                            </div>
-                            <div className="w-1 h-1 bg-slate-900 rounded-full"></div>
-                          </div>
-                </div>
-                
-                        {/* Scrollable Content */}
-                        <div className="flex-1 overflow-y-auto overflow-x-hidden bg-white scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent relative" style={{ minHeight: 0 }}>
-                          {/* Ad Image - Full Height */}
-                  {(formData.imageUrl || imagePreview) ? (
-                            <div className="w-full h-full bg-slate-200 overflow-hidden relative">
-                      <img
-                        src={imagePreview || formData.imageUrl}
-                        alt="Ad preview"
-                                className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                                  if (fallback) fallback.classList.remove('hidden');
-                        }}
-                      />
-                              <div className="hidden w-full h-full bg-gray-200 flex items-center justify-center">
-                        <div className="text-center text-gray-500">
-                                  <Image className="w-8 h-8 mx-auto mb-1 text-gray-400" />
-                                  <p className="text-xs">Image failed</p>
-                                </div>
-                              </div>
-                              
-                              {/* Overlay Content */}
-                              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-3">
-                                {formData.title && (
-                                  <h4 className="font-semibold text-white text-sm leading-tight break-words overflow-wrap-anywhere mb-2">
-                                    {formData.title}
-                                  </h4>
-                                )}
-                                {formData.redirectLink && (
-                                  <p className="text-xs text-white/80 flex items-start gap-1">
-                                    <LinkIcon className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                                    <span className="break-all">{formData.redirectLink}</span>
-                                  </p>
-                                )}
-                                <div className="flex items-center justify-between text-xs text-white/70 mt-2 pt-2 border-t border-white/20">
-                                  <span>Sponsored</span>
-                                  <span>Learn More</span>
-                        </div>
-                      </div>
-                              
-                              {/* Ad Header Badge */}
-                              <div className="absolute top-2 left-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2 py-1 rounded text-xs font-medium">
-                                Advertisement
-                      </div>
-                    </div>
-                  ) : (
-                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                      <div className="text-center text-gray-500">
-                                <Image className="w-8 h-8 mx-auto mb-1 text-gray-400" />
-                                <p className="text-xs">No image</p>
-                      </div>
-                    </div>
-                  )}
-                        </div>
-                        
-                        {/* Home Indicator */}
-                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-slate-900 rounded-full z-30"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-                  </div>
-                </div>
-              </div>
               
       {/* Schedule Modal */}
       {showScheduleModal && (
@@ -804,6 +685,7 @@ export default function CreateAdPage() {
             </div>
           </div>
         )}
+      </div>
     </Layout>
   );
 }

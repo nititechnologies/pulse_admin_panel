@@ -4,11 +4,13 @@ import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
+import { addJournalist } from '@/lib/journalists';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -29,6 +31,11 @@ export default function AuthPage() {
       if (isLogin) {
         await signIn(email, password);
       } else {
+        if (!name.trim()) {
+          setError('Please enter your name');
+          setLoading(false);
+          return;
+        }
         if (!agreedToTerms) {
           setError('Please agree to the Terms & Conditions');
           setLoading(false);
@@ -44,7 +51,18 @@ export default function AuthPage() {
           setLoading(false);
           return;
         }
-        await signUp(email, password);
+        // Sign up user
+        const userCredential = await signUp(email, password);
+        // Create journalist record in Firestore
+        if (userCredential?.user) {
+          await addJournalist({
+            uid: userCredential.user.uid,
+            name: name.trim(),
+            email: email.trim(),
+            phone: phone.trim() || undefined,
+            status: 'inactive', // New journalists start as inactive
+          });
+        }
       }
       router.push('/');
     } catch (error) {
@@ -90,19 +108,35 @@ export default function AuthPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {!isLogin && (
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-[#323232] mb-2">
-                  Name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 border border-[#DCDCDC] rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all bg-[#F0F0F0] placeholder-gray-400 text-[#323232]"
-                  placeholder="Enter your name"
-                />
-              </div>
+              <>
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-[#323232] mb-2">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-4 py-3 border border-[#DCDCDC] rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all bg-[#F0F0F0] placeholder-gray-400 text-[#323232]"
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-[#323232] mb-2">
+                    Phone Number
+                  </label>
+                  <input
+                    id="phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full px-4 py-3 border border-[#DCDCDC] rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all bg-[#F0F0F0] placeholder-gray-400 text-[#323232]"
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+              </>
             )}
 
             <div>
@@ -190,7 +224,20 @@ export default function AuthPage() {
 
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                {error}
+                <div className="flex items-start">
+                  <span className="mr-2">⚠️</span>
+                  <div>
+                    <p>{error}</p>
+                    {error.includes('invalid-credential') && email.toLowerCase().includes('admin') && (
+                      <p className="text-sm mt-2">
+                        Need to create admin user?{' '}
+                        <a href="/setup" className="underline font-medium">
+                          Click here to set up admin account
+                        </a>
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -224,6 +271,7 @@ export default function AuthPage() {
                 setPassword('');
                 setConfirmPassword('');
                 setName('');
+                setPhone('');
                 setAgreedToTerms(false);
               }}
               className="text-[#323232] hover:text-black font-medium transition-colors focus:outline-none focus:ring-0"

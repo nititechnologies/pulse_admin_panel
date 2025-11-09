@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Layout from '@/components/Layout';
 import { getArticles, deleteArticle, updateArticle, Article } from '@/lib/articles';
 import { Search, Trash2, Eye, Calendar, User, Tag, ChevronDown, Check, FileText, Globe, X, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 
 export default function ManageNewsPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
@@ -17,8 +19,6 @@ export default function ManageNewsPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-  const [showReviewModal, setShowReviewModal] = useState(false);
   
   // Sorting state
   const [sortColumn, setSortColumn] = useState<string | null>(null);
@@ -118,13 +118,9 @@ export default function ManageNewsPage() {
   };
 
   const handleReviewArticle = (article: Article) => {
-    setSelectedArticle(article);
-    setShowReviewModal(true);
-  };
-
-  const closeReviewModal = () => {
-    setShowReviewModal(false);
-    setSelectedArticle(null);
+    if (article.id) {
+      router.push(`/news/${article.id}`);
+    }
   };
 
   const filteredArticles = articles.filter(article => {
@@ -460,6 +456,12 @@ export default function ManageNewsPage() {
                       </div>
                     </th>
                     <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Dislikes
+                    </th>
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Bookmarks
+                    </th>
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -605,6 +607,16 @@ export default function ManageNewsPage() {
                         </div>
                       </td>
                       <td className="px-4 py-2.5 whitespace-nowrap">
+                        <div className="text-xs font-medium text-slate-700">
+                          {(article.dislikes || 0).toLocaleString()}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        <div className="text-xs font-medium text-slate-700">
+                          {(article.bookmarkCount || 0).toLocaleString()}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2.5 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           <button 
                             onClick={(e) => {
@@ -647,123 +659,6 @@ export default function ManageNewsPage() {
           )}
         </div>
 
-        {/* Review Modal */}
-        {showReviewModal && selectedArticle && (
-          <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
-              {/* Modal Header */}
-              <div className="p-6 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-white flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Eye className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold text-slate-800">Article Review</h2>
-                    <p className="text-xs text-slate-500">Review article details</p>
-                  </div>
-                </div>
-                <button
-                  onClick={closeReviewModal}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Modal Content */}
-              <div className="p-8 overflow-y-auto max-h-[calc(90vh-160px)]">
-                <div className="space-y-6">
-                  {/* Article Header */}
-                  <div className="border border-slate-200 rounded-xl overflow-hidden bg-gradient-to-br from-slate-50 to-white">
-                    {/* Featured Image */}
-                    {selectedArticle.imageUrl && (
-                      <div className="w-full h-64 bg-slate-200 overflow-hidden">
-                        <img
-                          src={selectedArticle.imageUrl}
-                          alt="Article preview"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    )}
-                    
-                    <div className="p-6">
-                      <div className="mb-6">
-                        <h3 className="text-2xl font-bold text-slate-900 mb-4 leading-tight">
-                          {selectedArticle.title}
-                        </h3>
-                        {selectedArticle.summary && (
-                          <p className="text-gray-600 text-base leading-relaxed mb-6">{selectedArticle.summary}</p>
-                        )}
-                        
-                        {/* Article Meta */}
-                        <div className="flex flex-wrap items-center gap-5 text-sm text-gray-600 pt-4 border-t border-gray-200">
-                          {selectedArticle.journalistName && (
-                            <span className="flex items-center font-medium">
-                              <User className="w-4 h-4 mr-2 text-blue-600" />
-                              {selectedArticle.journalistName}
-                            </span>
-                          )}
-                          <span className="flex items-center">
-                            <Calendar className="w-4 h-4 mr-2 text-blue-600" />
-                            {new Date(selectedArticle.publishedAt).toLocaleDateString('en-US', { 
-                              year: 'numeric', 
-                              month: 'long', 
-                              day: 'numeric' 
-                            })}
-                          </span>
-                          {selectedArticle.region && (
-                            <span className="flex items-center">
-                              <Globe className="w-4 h-4 mr-2 text-blue-600" />
-                              {selectedArticle.region}
-                            </span>
-                          )}
-                          <span className="text-slate-500">{selectedArticle.views || 0} views</span>
-                        </div>
-                      </div>
-                      
-                      {/* Tags */}
-                      {selectedArticle.tags && selectedArticle.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-6">
-                          {selectedArticle.tags.map((tag, index) => (
-                            <span
-                              key={index}
-                              className="px-4 py-1.5 bg-blue-100 text-blue-800 rounded-lg text-sm font-medium border border-blue-200"
-                            >
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {/* Article Content */}
-                      {selectedArticle.content && (
-                        <div className="pt-6 border-t border-gray-200">
-                          <div 
-                            className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 prose-strong:text-gray-900"
-                            dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="p-6 border-t border-slate-200 bg-gradient-to-br from-slate-50 to-white flex justify-end space-x-3">
-                <button
-                  onClick={closeReviewModal}
-                  className="px-5 py-2 border border-slate-200 rounded-lg text-slate-700 hover:bg-white transition-colors text-sm font-medium shadow-sm"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </Layout>
   );

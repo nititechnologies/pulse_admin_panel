@@ -15,7 +15,7 @@ interface AuthContextType {
   loading: boolean;
   isAdministrator: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<{ user: User } | null>;
   logout: () => Promise<void>;
 }
 
@@ -33,11 +33,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is administrator based on email domain or specific emails
+  // Check if user is administrator - admin credentials: email "admin@admin.com", password "admin"
   const isAdministrator = user ? 
-    user.email?.includes('@pulse.com') || 
-    user.email === 'admin@pulse.com' || 
-    user.email === 'administrator@pulse.com' : false;
+    user.email?.toLowerCase() === 'admin@admin.com' : false;
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -50,15 +48,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      // Handle admin login with special credentials
+      // If user enters "admin" as email, convert to "admin@admin.com"
+      let loginEmail = email.toLowerCase().trim();
+      if (loginEmail === 'admin' || loginEmail === 'admin@admin.com') {
+        loginEmail = 'admin@admin.com';
+      }
+      await signInWithEmailAndPassword(auth, loginEmail, password);
     } catch (error) {
       throw error;
     }
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string): Promise<{ user: User } | null> => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      return { user: userCredential.user };
     } catch (error) {
       throw error;
     }

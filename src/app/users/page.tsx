@@ -1,612 +1,251 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Layout from '@/components/Layout';
-import { Search, UserCheck, UserX, Mail, Phone, Calendar, TrendingUp, Clock, ChevronDown, Check } from 'lucide-react';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  status: string;
-  joinDate: string;
-  lastActive: string;
-  profileImage: string;
-  recentArticles: Array<{
-    title: string;
-    date: string;
-    views: number;
-  }>;
-}
+import { useAuth } from '@/contexts/AuthContext';
+import { getJournalists, updateJournalistStatus, Journalist } from '@/lib/journalists';
+import { Search, UserCheck, UserX, Mail, Phone, Calendar, ArrowLeft } from 'lucide-react';
+import { Timestamp } from 'firebase/firestore';
 
 export default function UsersPage() {
+  const router = useRouter();
+  const { isAdministrator } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [joinDateFrom, setJoinDateFrom] = useState('');
-  const [joinDateTo, setJoinDateTo] = useState('');
-  const [lastActiveFrom, setLastActiveFrom] = useState('');
-  const [lastActiveTo, setLastActiveTo] = useState('');
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [journalists, setJournalists] = useState<Journalist[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
+    if (!isAdministrator) {
+      router.push('/');
+      return;
+    }
+    fetchJournalists();
+  }, [isAdministrator, router]);
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  const filterOptions = [
-    { value: 'all', label: 'All Users' },
-    { value: 'active', label: 'Active Only' },
-    { value: 'inactive', label: 'Inactive Only' }
-  ];
-
-  const handleFilterSelect = (value: string) => {
-    setStatusFilter(value);
-    setIsDropdownOpen(false);
-  };
-
-  const clearAllFilters = () => {
-    setSearchQuery('');
-    setStatusFilter('all');
-    setJoinDateFrom('');
-    setJoinDateTo('');
-    setLastActiveFrom('');
-    setLastActiveTo('');
-  };
-
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: 'John Smith',
-      email: 'john.smith@pulse.com',
-      phone: '+1 (555) 123-4567',
-      status: 'active',
-      joinDate: '2023-01-15',
-      lastActive: '2024-01-21',
-      profileImage: 'https://via.placeholder.com/100x100',
-      recentArticles: [
-        { title: 'Tech Innovation Trends 2024', date: '2024-01-20', views: 2500 },
-        { title: 'AI Revolution in Healthcare', date: '2024-01-18', views: 3200 },
-        { title: 'Climate Change Solutions', date: '2024-01-15', views: 1800 },
-      ],
-    },
-    {
-      id: 2,
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@pulse.com',
-      phone: '+1 (555) 234-5678',
-      status: 'active',
-      joinDate: '2023-03-22',
-      lastActive: '2024-01-20',
-      profileImage: 'https://via.placeholder.com/100x100',
-      recentArticles: [
-        { title: 'Economic Analysis Q4 2023', date: '2024-01-19', views: 1800 },
-        { title: 'Market Trends Report', date: '2024-01-17', views: 2100 },
-        { title: 'Global Trade Updates', date: '2024-01-14', views: 1500 },
-      ],
-    },
-    {
-      id: 3,
-      name: 'Mike Chen',
-      email: 'mike.chen@pulse.com',
-      phone: '+1 (555) 345-6789',
-      status: 'active',
-      joinDate: '2023-06-10',
-      lastActive: '2024-01-19',
-      profileImage: 'https://via.placeholder.com/100x100',
-      recentArticles: [
-        { title: 'Sports Update: Championship', date: '2024-01-21', views: 1900 },
-        { title: 'Team Analysis Report', date: '2024-01-19', views: 1600 },
-        { title: 'Player Performance Review', date: '2024-01-16', views: 1200 },
-      ],
-    },
-    {
-      id: 4,
-      name: 'Emily Rodriguez',
-      email: 'emily.rodriguez@pulse.com',
-      phone: '+1 (555) 456-7890',
-      status: 'inactive',
-      joinDate: '2023-09-05',
-      lastActive: '2024-01-05',
-      profileImage: 'https://via.placeholder.com/100x100',
-      recentArticles: [
-        { title: 'Health & Wellness Guide', date: '2024-01-05', views: 1200 },
-        { title: 'Nutrition Tips', date: '2023-12-28', views: 800 },
-      ],
-    },
-    {
-      id: 5,
-      name: 'David Thompson',
-      email: 'david.thompson@pulse.com',
-      phone: '+1 (555) 567-8901',
-      status: 'active',
-      joinDate: '2023-11-12',
-      lastActive: '2024-01-21',
-      profileImage: 'https://via.placeholder.com/100x100',
-      recentArticles: [
-        { title: 'Business Strategy Insights', date: '2024-01-20', views: 2200 },
-        { title: 'Leadership Development', date: '2024-01-18', views: 1900 },
-        { title: 'Startup Success Stories', date: '2024-01-15', views: 1600 },
-      ],
-    },
-    {
-      id: 6,
-      name: 'Lisa Wang',
-      email: 'lisa.wang@pulse.com',
-      phone: '+1 (555) 678-9012',
-      status: 'inactive',
-      joinDate: '2023-12-01',
-      lastActive: '2023-12-15',
-      profileImage: 'https://via.placeholder.com/100x100',
-      recentArticles: [
-        { title: 'Art & Culture Review', date: '2023-12-15', views: 900 },
-        { title: 'Music Industry Trends', date: '2023-12-10', views: 1100 },
-      ],
-    },
-  ]);
-
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
-    
-    // Date filtering logic
-    const userJoinDate = new Date(user.joinDate);
-    const userLastActive = new Date(user.lastActive);
-    
-    const matchesJoinDate = (!joinDateFrom || userJoinDate >= new Date(joinDateFrom)) &&
-                           (!joinDateTo || userJoinDate <= new Date(joinDateTo));
-    
-    const matchesLastActive = (!lastActiveFrom || userLastActive >= new Date(lastActiveFrom)) &&
-                             (!lastActiveTo || userLastActive <= new Date(lastActiveTo));
-    
-    return matchesSearch && matchesStatus && matchesJoinDate && matchesLastActive;
-  });
-
-  const handleStatusToggle = (id: number, currentStatus: string) => {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    
-    setUsers(prevUsers => 
-      prevUsers.map(user => 
-        user.id === id 
-          ? { ...user, status: newStatus }
-          : user
-      )
-    );
-    
-    console.log(`User ${id} status updated to ${newStatus}`);
-  };
-
-  const handleViewProfile = (user: User) => {
-    setSelectedUser(user);
-    setShowDetailsModal(true);
-  };
-
-  const closeDetailsModal = () => {
-    setShowDetailsModal(false);
-    setSelectedUser(null);
-  };
-
-  const getStatusColor = (status: string) => {
-    return status === 'active' 
-      ? 'bg-green-100 text-green-800' 
-      : 'bg-red-100 text-red-800';
-  };
-
-  const getStatusIcon = (status: string) => {
-    return status === 'active' ? <UserCheck className="w-4 h-4" /> : <UserX className="w-4 h-4" />;
-  };
-
-  const getRoleColor = (role: string) => {
-    switch (role.toLowerCase()) {
-      case 'administrator':
-        return 'bg-purple-100 text-purple-800';
-      case 'editor':
-        return 'bg-blue-100 text-blue-800';
-      case 'journalist':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const fetchJournalists = async () => {
+    try {
+      setLoading(true);
+      const data = await getJournalists();
+      setJournalists(data);
+    } catch (error) {
+      console.error('Error fetching journalists:', error);
+      setError('Failed to load journalists');
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleToggleStatus = async (id: string, currentStatus: 'active' | 'inactive') => {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    try {
+      await updateJournalistStatus(id, newStatus);
+      setJournalists(prev => 
+        prev.map(j => j.id === id ? { ...j, status: newStatus } : j)
+      );
+    } catch (error) {
+      console.error('Error updating journalist status:', error);
+      alert('Failed to update status');
+    }
+  };
+
+  const handleViewJournalist = (journalist: Journalist) => {
+    if (journalist.id) {
+      router.push(`/users/${journalist.id}`);
+    }
+  };
+
+  const formatDate = (date: Timestamp | string | undefined): string => {
+    if (!date) return 'N/A';
+    if (date instanceof Timestamp) {
+      return date.toDate().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    }
+    return new Date(date).toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  const filteredJournalists = journalists.filter(journalist => {
+    const matchesSearch = 
+      journalist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      journalist.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (journalist.phone && journalist.phone.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesSearch;
+  });
+
+  const activeCount = journalists.filter(j => j.status === 'active').length;
+  const inactiveCount = journalists.filter(j => j.status === 'inactive').length;
+
+  if (!isAdministrator) {
+    return null; // Will redirect
+  }
+
+  if (loading) {
+    return (
+      <Layout title="Manage Users">
+        <div className="flex items-center justify-center h-64">
+          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout title="Manage Users">
-      <div className="space-y-6">
+      <div className="space-y-6 pb-8">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-8 shadow-lg text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white">User Management</h1>
-              <p className="text-blue-100 mt-2">Manage user accounts and permissions</p>
-            </div>
-            <div className="flex items-center space-x-8">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white">{users.length}</div>
-                <div className="text-sm text-blue-100 font-medium">Total Users</div>
+        <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-xl p-6 shadow-lg text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px] opacity-40"></div>
+          <div className="relative z-10">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-white mb-2">Manage Journalists</h1>
+                <p className="text-blue-100 text-sm">Manage journalist accounts and permissions</p>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-emerald-200">
-                  {users.filter(u => u.status === 'active').length}
+              <div className="flex items-center space-x-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-white">{journalists.length}</div>
+                  <div className="text-xs text-blue-100 font-medium">Total</div>
                 </div>
-                <div className="text-sm text-blue-100 font-medium">Active</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-red-200">
-                  {users.filter(u => u.status === 'inactive').length}
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-emerald-200">{activeCount}</div>
+                  <div className="text-xs text-blue-100 font-medium">Active</div>
                 </div>
-                <div className="text-sm text-blue-100 font-medium">Inactive</div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-red-200">{inactiveCount}</div>
+                  <div className="text-xs text-blue-100 font-medium">Inactive</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Search and Filter */}
+        {/* Search */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-          <div className="flex flex-col lg:flex-row gap-3">
-            {/* Search Input */}
-            <div className="flex-1 max-w-sm">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search users..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-slate-900"
-                />
-              </div>
-            </div>
-            
-            {/* Status Filter */}
-            <div className="w-40">
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between text-sm"
-                >
-                  <span className="text-slate-900 truncate">
-                    {filterOptions.find(option => option.value === statusFilter)?.label}
-                  </span>
-                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
-                
-                {isDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50">
-                    {filterOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => handleFilterSelect(option.value)}
-                        className="w-full px-3 py-2 text-left text-white hover:bg-slate-700 first:rounded-t-lg last:rounded-b-lg flex items-center justify-between text-sm"
-                      >
-                        <span>{option.label}</span>
-                        {statusFilter === option.value && (
-                          <Check className="w-3 h-3 text-white" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Join Date Range */}
-            <div className="flex gap-2 items-center">
-              <label className="text-xs font-medium text-slate-600 whitespace-nowrap">Join:</label>
-              <input
-                type="date"
-                value={joinDateFrom}
-                onChange={(e) => setJoinDateFrom(e.target.value)}
-                className="w-32 px-2 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs text-slate-900"
-              />
-              <span className="text-slate-400 text-xs">to</span>
-              <input
-                type="date"
-                value={joinDateTo}
-                onChange={(e) => setJoinDateTo(e.target.value)}
-                className="w-32 px-2 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs text-slate-900"
-              />
-            </div>
-
-            {/* Last Active Range */}
-            <div className="flex gap-2 items-center">
-              <label className="text-xs font-medium text-slate-600 whitespace-nowrap">Active:</label>
-              <input
-                type="date"
-                value={lastActiveFrom}
-                onChange={(e) => setLastActiveFrom(e.target.value)}
-                className="w-32 px-2 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs text-slate-900"
-              />
-              <span className="text-slate-400 text-xs">to</span>
-              <input
-                type="date"
-                value={lastActiveTo}
-                onChange={(e) => setLastActiveTo(e.target.value)}
-                className="w-32 px-2 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs text-slate-900"
-              />
-            </div>
-
-            {/* Clear Filters Button */}
-            <button
-              onClick={clearAllFilters}
-              className="px-3 py-2 text-xs text-slate-600 hover:text-slate-800 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors whitespace-nowrap"
-            >
-              Clear All
-            </button>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search by name, email, or phone..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+            />
           </div>
         </div>
 
-        {/* Users Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200">
-          <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-purple-50">
-            <h3 className="text-lg font-semibold text-slate-800">
-              Users ({filteredUsers.length})
-            </h3>
-          </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
-                    User
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
-                    Contact
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
-                    Last Active
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-slate-200">
-                {filteredUsers.map((user) => (
-                  <tr 
-                    key={user.id} 
-                    onClick={() => handleViewProfile(user)}
-                    className="hover:bg-slate-50 transition-colors cursor-pointer"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <img
-                            className="h-10 w-10 rounded-full object-cover ring-2 ring-blue-200"
-                            src={user.profileImage}
-                            alt={user.name}
-                            onError={(e) => {
-                              e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNFNUU3RUIiLz4KPHBhdGggZD0iTTIwIDEwQzIyLjIwOTEgMTAgMjQgMTEuNzkwOSAyNCAxNEMyNCAxNi4yMDkxIDIyLjIwOTEgMTggMjAgMThDMTcuNzkwOSAxOCAxNiAxNi4yMDkxIDE2IDE0QzE2IDExLjc5MDkgMTcuNzkwOSAxMCAyMCAxMFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHBhdGggZD0iTTMwIDMwQzMwIDI3LjM4NjMgMjcuNjE4IDI1IDIzIDI1SDE3QzEyLjM4MiAyNSAxMCAyNy4zODYzIDEwIDMwVjMySDMwVjMwWiIgZmlsbD0iIzlDQTNBRiIvPgo8L3N2Zz4K';
-                            }}
-                          />
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-slate-800">
-                            {user.name}
+        {/* Journalists Table */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          {error ? (
+            <div className="p-8 text-center text-red-600">{error}</div>
+          ) : filteredJournalists.length === 0 ? (
+            <div className="p-8 text-center text-slate-500">
+              {searchQuery ? 'No journalists found matching your search' : 'No journalists found'}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Journalist
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Contact
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Joined
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-slate-100">
+                  {filteredJournalists.map((journalist) => (
+                    <tr 
+                      key={journalist.id}
+                      onClick={() => handleViewJournalist(journalist)}
+                      className="hover:bg-blue-50/30 transition-colors cursor-pointer"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                            {journalist.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-semibold text-slate-900">{journalist.name}</div>
+                            {journalist.specialization && (
+                              <div className="text-xs text-slate-500">{journalist.specialization}</div>
+                            )}
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-slate-800">{user.email}</div>
-                      <div className="text-sm text-slate-500">{user.phone}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
-                      {user.lastActive}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center space-x-3">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          user.status === 'active' 
-                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' 
-                            : 'bg-slate-100 text-slate-800 border border-slate-200'
-                        }`}>
-                          {user.status === 'active' ? (
-                            <>
-                              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5"></div>
-                              Active
-                            </>
-                          ) : (
-                            <>
-                              <div className="w-1.5 h-1.5 bg-slate-400 rounded-full mr-1.5"></div>
-                              Inactive
-                            </>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-slate-700">
+                          <div className="flex items-center mb-1">
+                            <Mail className="w-4 h-4 mr-2 text-slate-400" />
+                            {journalist.email}
+                          </div>
+                          {journalist.phone && (
+                            <div className="flex items-center">
+                              <Phone className="w-4 h-4 mr-2 text-slate-400" />
+                              {journalist.phone}
+                            </div>
                           )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-slate-700">
+                          <div className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-2 text-slate-400" />
+                            {formatDate(journalist.createdAt)}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                          journalist.status === 'active' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {journalist.status === 'active' ? (
+                            <UserCheck className="w-3 h-3 mr-1" />
+                          ) : (
+                            <UserX className="w-3 h-3 mr-1" />
+                          )}
+                          {journalist.status}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleStatusToggle(user.id, user.status);
-                          }}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white ${
-                            user.status === 'active' 
-                              ? 'bg-emerald-500 focus:ring-emerald-500' 
-                              : 'bg-red-500 focus:ring-red-500'
+                          onClick={() => journalist.id && handleToggleStatus(journalist.id, journalist.status)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            journalist.status === 'active'
+                              ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                              : 'bg-green-100 text-green-700 hover:bg-green-200'
                           }`}
                         >
-                          <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
-                              user.status === 'active' ? 'translate-x-6' : 'translate-x-1'
-                            }`}
-                          />
+                          {journalist.status === 'active' ? 'Deactivate' : 'Activate'}
                         </button>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewProfile(user);
-                        }}
-                        className="text-blue-600 hover:text-blue-700 transition-colors font-medium"
-                      >
-                        View Profile
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          <div className="px-6 py-4 border-t border-slate-200 bg-slate-50">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-slate-700">
-                Showing 1 to {filteredUsers.length} of {filteredUsers.length} results
-              </p>
-              <div className="flex space-x-2">
-                <button className="px-3 py-1 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-100 transition-colors">
-                  Previous
-                </button>
-                <button className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg text-sm hover:from-blue-600 hover:to-purple-700 transition-colors shadow-md">
-                  1
-                </button>
-                <button className="px-3 py-1 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-100 transition-colors">
-                  Next
-                </button>
-              </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
+          )}
         </div>
-
-        {/* User Details Modal */}
-        {showDetailsModal && selectedUser && (
-          <div className="fixed inset-0 backdrop-blur-xl flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-hidden shadow-2xl border border-slate-200">
-              {/* Modal Header */}
-              <div className="px-8 py-6 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-purple-50 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-slate-800">User Profile</h2>
-                <button
-                  onClick={closeDetailsModal}
-                  className="p-2 text-slate-400 hover:text-slate-600 transition-colors rounded-lg hover:bg-slate-100"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Modal Content */}
-              <div className="px-8 py-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-                <div className="space-y-8">
-                  {/* Profile Section */}
-                  <div className="text-center">
-                    <div className="w-20 h-20 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full mx-auto mb-4 flex items-center justify-center ring-4 ring-blue-100">
-                      <img
-                        src={selectedUser.profileImage}
-                        alt={selectedUser.name}
-                        className="w-20 h-20 object-cover rounded-full"
-                        onError={(e) => {
-                          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IiNFNUU3RUIiLz4KPHBhdGggZD0iTTQwIDI1QzQ1LjUyMjggMjUgNTAgMjkuNDc3MiA1MCAzNUM1MCA0MC41MjI4IDQ1LjUyMjggNDUgNDAgNDVDMzQuNDc3MiA0NSAzMCA0MC41MjI4IDMwIDM1QzMwIDI5LjQ3NzIgMzQuNDc3MiAyNSA0MCAyNVoiIGZpbGw9IiM5Q0EzQUYiLz4KPHBhdGggZD0iTTU2IDU1QzU2IDQ1LjMzNTYgNDkuNjY0NCAzOSA0MCAzOUgzMEMyMC4zMzU2IDM5IDE0IDQ1LjMzNTYgMTQgNTVWNTlINjBWNTUiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+Cg==';
-                        }}
-                      />
-                    </div>
-                    <h3 className="text-3xl font-bold text-slate-800 mb-2">{selectedUser.name}</h3>
-                    <div className="space-y-1 text-sm text-slate-600">
-                      <div className="flex items-center justify-center space-x-2">
-                        <Mail className="w-4 h-4 text-slate-400" />
-                        <span>{selectedUser.email}</span>
-                      </div>
-                      <div className="flex items-center justify-center space-x-2">
-                        <Phone className="w-4 h-4 text-slate-400" />
-                        <span>{selectedUser.phone}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* User Information */}
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-6">
-                    <h4 className="text-lg font-semibold text-slate-800 mb-4">User Information</h4>
-                    <div className="space-y-3 text-sm">
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium text-slate-600">Join Date</span>
-                        <span className="text-slate-800">{selectedUser.joinDate}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium text-slate-600">Last Active</span>
-                        <span className="text-slate-800">{selectedUser.lastActive}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center space-x-2">
-                          <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                          <span className="font-medium text-slate-600">Status</span>
-                        </div>
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                          selectedUser.status === 'active' 
-                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' 
-                            : 'bg-slate-100 text-slate-800 border border-slate-200'
-                        }`}>
-                          {selectedUser.status === 'active' ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Recent Articles */}
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-6">
-                    <h4 className="text-lg font-semibold text-slate-800 mb-4">Recent Articles</h4>
-                    <div className="space-y-4">
-                      {selectedUser.recentArticles.map((article, index) => (
-                        <div key={index} className="flex items-center space-x-3 py-3 border-b border-slate-100 last:border-b-0">
-                          <TrendingUp className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-slate-800 text-sm">{article.title}</div>
-                            <div className="text-xs text-slate-500">{article.date}</div>
-                          </div>
-                          <div className="text-xs text-slate-600 font-medium">
-                            {article.views.toLocaleString()} views
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="px-8 py-6 border-t border-slate-200 bg-slate-50 flex justify-end space-x-3">
-                <button
-                  onClick={() => {
-                    handleStatusToggle(selectedUser.id, selectedUser.status);
-                    closeDetailsModal();
-                  }}
-                  className={`px-6 py-2 rounded-lg font-medium transition-colors shadow-md ${
-                    selectedUser.status === 'active'
-                      ? 'bg-red-500 text-white hover:bg-red-600'
-                      : 'bg-emerald-500 text-white hover:bg-emerald-600'
-                  }`}
-                >
-                  {selectedUser.status === 'active' ? 'Deactivate User' : 'Activate User'}
-                </button>
-                <button
-                  onClick={closeDetailsModal}
-                  className="px-6 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors font-medium"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </Layout>
   );

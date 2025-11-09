@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Layout from '@/components/Layout';
 import { getAds, updateAd, deleteAd, type Ad } from '@/lib/ads';
 import { Search, Trash2, Eye, Play, Pause, ChevronDown, Check, Megaphone, TrendingUp, MousePointerClick, BarChart3, Calendar, ExternalLink, Plus, X, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
@@ -8,10 +9,9 @@ import Link from 'next/link';
 import { Timestamp } from 'firebase/firestore';
 
 export default function ManageAdsPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
-  const [selectedCampaign, setSelectedCampaign] = useState<Ad | null>(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const statusDropdownRef = useRef<HTMLDivElement>(null);
   const [ads, setAds] = useState<Ad[]>([]);
@@ -113,16 +113,18 @@ export default function ManageAdsPage() {
         bValue = b.title.toLowerCase();
         break;
       case 'impressions':
-        aValue = a.impressions || 0;
-        bValue = b.impressions || 0;
+        aValue = a.views || a.impressions || 0;
+        bValue = b.views || b.impressions || 0;
         break;
       case 'clicks':
         aValue = a.clicks || 0;
         bValue = b.clicks || 0;
         break;
       case 'ctr':
-        aValue = calculateCTR(a.impressions, a.clicks);
-        bValue = calculateCTR(b.impressions, b.clicks);
+        const aViews = a.views || a.impressions || 0;
+        const bViews = b.views || b.impressions || 0;
+        aValue = calculateCTR(aViews, a.clicks || 0);
+        bValue = calculateCTR(bViews, b.clicks || 0);
         break;
       case 'status':
         aValue = (a.status || 'draft').toLowerCase();
@@ -204,13 +206,9 @@ export default function ManageAdsPage() {
   };
 
   const handleViewCampaign = (ad: Ad) => {
-    setSelectedCampaign(ad);
-    setShowDetailsModal(true);
-  };
-
-  const closeDetailsModal = () => {
-    setShowDetailsModal(false);
-    setSelectedCampaign(null);
+    if (ad.id) {
+      router.push(`/ads/${ad.id}`);
+    }
   };
 
   const handleToggleStatus = async (id: string, currentStatus: string = 'draft') => {
@@ -236,9 +234,6 @@ export default function ManageAdsPage() {
     try {
       await deleteAd(id);
       setAds(prevAds => prevAds.filter(ad => ad.id !== id));
-      if (selectedCampaign?.id === id) {
-        closeDetailsModal();
-      }
       alert('Ad deleted successfully');
     } catch (error) {
       console.error('Error deleting ad:', error);
@@ -248,7 +243,7 @@ export default function ManageAdsPage() {
 
   // Calculate total stats
   const totalStats = ads.reduce((acc, ad) => ({
-    impressions: acc.impressions + (ad.impressions || 0),
+    impressions: acc.impressions + (ad.views || ad.impressions || 0),
     clicks: acc.clicks + (ad.clicks || 0),
     published: acc.published + (ad.status === 'published' ? 1 : 0),
   }), { impressions: 0, clicks: 0, published: 0 });
@@ -491,7 +486,8 @@ export default function ManageAdsPage() {
               </thead>
                 <tbody className="bg-white divide-y divide-slate-100">
                     {sortedAds.map((ad) => {
-                      const ctr = calculateCTR(ad.impressions, ad.clicks);
+                      const views = ad.views || ad.impressions || 0;
+                      const ctr = calculateCTR(views, ad.clicks || 0);
                       return (
                       <tr 
                         key={ad.id} 
@@ -543,7 +539,7 @@ export default function ManageAdsPage() {
                     </td>
                       <td className="px-4 py-2.5 whitespace-nowrap">
                         <div className="text-xs font-medium text-slate-700">
-                          {(ad.impressions || 0).toLocaleString()}
+                          {(ad.views || ad.impressions || 0).toLocaleString()}
                         </div>
                     </td>
                       <td className="px-4 py-2.5 whitespace-nowrap">
@@ -632,152 +628,6 @@ export default function ManageAdsPage() {
           )}
         </div>
 
-        {/* Ad Details Modal */}
-        {showDetailsModal && selectedCampaign && (
-          <div className="fixed inset-0 backdrop-blur-md bg-black/50 flex items-center justify-center p-4 z-50" onClick={closeDetailsModal}>
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
-              {/* Modal Header */}
-              <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-purple-50 flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Megaphone className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-slate-800">Ad Details</h2>
-                </div>
-                <button
-                  onClick={closeDetailsModal}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-white rounded-lg transition-colors"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-
-              {/* Modal Content */}
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
-                <div className="space-y-6">
-                  {/* Ad Header */}
-                  <div className="border-2 border-slate-200 rounded-2xl overflow-hidden bg-white shadow-md">
-                    <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <h3 className="text-2xl font-bold text-slate-800 mb-3 leading-tight">
-                            {selectedCampaign.title}
-                          </h3>
-                          <div className="flex items-center space-x-3">
-                            <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border-2 ${getStatusColor(selectedCampaign.status)}`}>
-                              {getStatusIcon(selectedCampaign.status)}
-                              <span className="ml-1.5">{selectedCampaign.status ? selectedCampaign.status.charAt(0).toUpperCase() + selectedCampaign.status.slice(1) : 'Draft'}</span>
-                            </span>
-                          </div>
-                        </div>
-                        {selectedCampaign.imageUrl && (
-                          <div className="ml-6 flex-shrink-0">
-                            <img
-                              src={selectedCampaign.imageUrl}
-                              alt="Ad preview"
-                              className="w-48 h-32 object-cover rounded-xl shadow-lg ring-2 ring-blue-100"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x200';
-                              }}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Ad Stats */}
-                    <div className="p-6 bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50">
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <BarChart3 className="w-5 h-5 text-purple-600" />
-                            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Impressions</div>
-                          </div>
-                          <div className="text-2xl font-bold text-slate-800">{(selectedCampaign.impressions || 0).toLocaleString()}</div>
-                        </div>
-                        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <MousePointerClick className="w-5 h-5 text-green-600" />
-                            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Clicks</div>
-                          </div>
-                          <div className="text-2xl font-bold text-slate-800">{(selectedCampaign.clicks || 0).toLocaleString()}</div>
-                        </div>
-                        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <TrendingUp className="w-5 h-5 text-orange-600" />
-                            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">CTR</div>
-                        </div>
-                          <div className="text-2xl font-bold text-slate-800">{calculateCTR(selectedCampaign.impressions, selectedCampaign.clicks)}%</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Ad Details */}
-                    <div className="p-6 border-t border-slate-200">
-                      <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-4">Additional Information</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-1">
-                          <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                            <Calendar className="w-4 h-4" />
-                            <span>Created At</span>
-                          </div>
-                          <div className="text-sm font-medium text-slate-800">{formatDate(selectedCampaign.createdAt)}</div>
-                        </div>
-                        {selectedCampaign.updatedAt && (
-                          <div className="space-y-1">
-                            <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                              <Calendar className="w-4 h-4" />
-                              <span>Last Updated</span>
-                            </div>
-                            <div className="text-sm font-medium text-slate-800">{formatDate(selectedCampaign.updatedAt)}</div>
-                          </div>
-                        )}
-                        {selectedCampaign.scheduledAt && (
-                          <div className="space-y-1">
-                            <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                              <Calendar className="w-4 h-4" />
-                              <span>Scheduled For</span>
-                            </div>
-                            <div className="text-sm font-medium text-slate-800">{formatDate(selectedCampaign.scheduledAt)}</div>
-                          </div>
-                        )}
-                        {selectedCampaign.redirectLink && (
-                          <div className="md:col-span-2 space-y-1">
-                            <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                              <ExternalLink className="w-4 h-4" />
-                              <span>Redirect Link</span>
-                        </div>
-                            <div className="text-sm font-medium break-all">
-                              <a 
-                                href={selectedCampaign.redirectLink} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="text-blue-600 hover:text-blue-700 hover:underline flex items-center space-x-2"
-                              >
-                                <span>{selectedCampaign.redirectLink}</span>
-                                <ExternalLink className="w-4 h-4" />
-                              </a>
-                        </div>
-                        </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="p-6 border-t border-slate-200 bg-slate-50 flex justify-end space-x-3">
-                <button
-                  onClick={closeDetailsModal}
-                  className="px-6 py-2.5 border-2 border-slate-300 rounded-xl text-slate-700 hover:bg-white transition-all duration-200 font-semibold shadow-sm hover:shadow-md"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </Layout>
   );
