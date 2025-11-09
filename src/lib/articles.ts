@@ -310,7 +310,7 @@ export const fetchArticlesFromAPI = async (params?: {
     const data: ArticleOneResponse = await response.json();
     
     // Handle different possible response structures
-    let articles = data.articles || data.data || data.results || [];
+    const articles = data.articles || data.data || data.results || [];
     
     // Transform API articles to our Article format
     return articles.map((article, index) => transformApiArticle(article, index)) as Article[];
